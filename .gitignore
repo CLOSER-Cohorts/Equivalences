@@ -1,0 +1,9 @@
+/packages
+/bin
+/obj
+Web.config
+Web.Debug.config
+Web.Release.config
+/.vs/Equivalences/v15/Server/sqlite3
+/Equivalences/bin
+/Equivalences/obj/Debug
