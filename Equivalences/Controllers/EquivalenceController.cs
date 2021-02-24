@@ -540,6 +540,7 @@ namespace ColecticaSdkMvc.Controllers
 
         public ExpectedModel GetExpectedItems(List<EquivalenceItem> results)
         {
+            // change
             ExpectedModel model = new ExpectedModel();
             model.AllResults = results.OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
             string currentdescription = null, currentname = null;
