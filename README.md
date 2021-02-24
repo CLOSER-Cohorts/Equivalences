@@ -1,0 +1,3 @@
+# Overview
+
+Equivalences is a tool to identify equivalent questions within studys and across multiple studies. Equivalences can be identified using 3 different methods. The primary method is to upload a file of equivalences from a csv that is used to find equivalent questions within the selected study or studies. Each item in this file may be a single word but can also be multiple words to get a closer match of equivalences. The secondary methods are to match questions where the questions are the same and where there is a match of words over 3 characters. It is possible to identify equivalences on questions or variables by selecting the appropriate option at the base of the screen.
