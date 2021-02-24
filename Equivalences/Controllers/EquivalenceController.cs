@@ -450,7 +450,7 @@ namespace ColecticaSdkMvc.Controllers
                     //model.AllResults = model.AllResults.Where(a => a.selected == true).OrderBy(a => a.uniqueId).ToList();
                     model1 = GetExpectedItems(model.AllResults);
                     model1.AllItems = model.AllItems;
-                    model1.AllResults = model.AllResults;
+                    model1.AllResults = ProcessChanges(model.AllResults);
                     model1.SelectedStudies = DeserializeStudies(model, selectedItems);
                     model1.Datasets = model.Datasets;
                     TempData["EquivalenceModel"] = model;
@@ -474,7 +474,7 @@ namespace ColecticaSdkMvc.Controllers
                 EquivalenceItem item = new EquivalenceItem();
                 item.uniqueId = result.uniqueId;
                 item.equivalence = result.equivalence;
-                item.name = result.name;
+                item.name = currentquestion;
                 item.description = currentname;
                 item.counter = result.counter;
                 item.questionName = result.questionName;
@@ -526,7 +526,7 @@ namespace ColecticaSdkMvc.Controllers
                     model.AllResults.SetValue(a => a.removed = false).ToList();
                     model1 = GetExpectedItems2(model.AllResults, model.SelectedStudies, selectedItems, model.Datasets);
                     model1.AllItems = model.AllItems;
-                    model1.AllResults = model.AllResults;
+                    model1.AllResults = ProcessChanges(model.AllResults);
                     model1.Datasets = model.Datasets;
                     model1.SelectedStudies = model.SelectedStudies;
                     TempData["EquivalenceModel"] = model1;
@@ -675,8 +675,6 @@ namespace ColecticaSdkMvc.Controllers
                                select new { Name = r1.Key };
             equivalences = equivalences.ToList();
 
-            //var waves = GetAllDatasets(results);
-            //var waves2 = GetAllDatasets2(results, selectedstudies, selecteditems);
 
             foreach (var equivalence in equivalences)
             {
