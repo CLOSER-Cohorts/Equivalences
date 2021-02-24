@@ -543,6 +543,7 @@ namespace ColecticaSdkMvc.Controllers
             ExpectedModel model = new ExpectedModel();
             model.AllResults = results.OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
             string currentdescription = null, currentname = null;
+            results.SetValue(a => a.selected = true).ToList();
 
             List<ExpectedItem> expecteditems = new List<ExpectedItem>();
             var equivalences = from r in results
@@ -555,7 +556,7 @@ namespace ColecticaSdkMvc.Controllers
             {
 
                 //var questions = results.Where(a => a.uniqueId == equivalence.Name).Where(a => a.removed == false).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
-                var questions = results.Where(a => a.uniqueId == equivalence.Name).Where(a => a.selected == true).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
+                var questions = results.Where(a => a.uniqueId == equivalence.Name).Where (a => a.selected == true).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
                 
                 while (questions.Count != 0)
                 {
@@ -1259,7 +1260,7 @@ namespace ColecticaSdkMvc.Controllers
                                 item.equivalence = "Same Words #" + item.uniqueId;
                                 break;
                         }
-                        item.selected = true;
+                        // item.selected = true;
                         item.column = waves.Where(a => a.StudyName == record.studyGroup).Select(a => { return a.ID; }).FirstOrDefault();
                         allresults.Add(item);
                         items.Where(a => a.variableItem == record.variableItem).SetValue(a => a.removed = true).ToList();
