@@ -15,6 +15,7 @@ namespace ColecticaSdkMvc.Models
     public class ExpectedItem
     {
         public int UniqueId { get; set; }
+        public string Equivalence { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Topic { get; set; }
