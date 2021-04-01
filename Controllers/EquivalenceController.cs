@@ -605,40 +605,46 @@ namespace ColecticaSdkMvc.Controllers
 
             foreach (var equivalence in equivalences)
             {
-
-                var questions = results.Where(a => a.uniqueId == equivalence.Name).Where(a => a.selected == true).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
-                while (questions.Count != 0)
+                var topics = (from r in results
+                              where r.selected == true
+                              where r.uniqueId == equivalence.Name
+                              group r by r.concept into r1
+                              select new { Name = r1.Key }).ToList();
+                foreach (var topic in topics)
                 {
-                    var waves = GetAllStudies(results);
-
-                    ExpectedItem expecteditem = new ExpectedItem();
-                    foreach (var wave in waves)
+                    var questions = results.Where(a => a.uniqueId == equivalence.Name).Where(a => a.concept == topic.Name.ToString()).Where(a => a.selected == true).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
+                    while (questions.Count != 0)
                     {
+                        var waves = GetAllStudies(results);
 
-                        var question = (from q in questions
-                                        where q.studyGroup == wave.StudyName
-                                        where q.selected == true
-                                        select q).FirstOrDefault();
-                        if (question != null)
+                        ExpectedItem expecteditem = new ExpectedItem();
+                        foreach (var wave in waves)
                         {
 
-                            if (question.description != null) { currentdescription = question.description; }
-                            if (question.name != null) { currentname = question.name; }
+                            var question = (from q in questions
+                                            where q.studyGroup == wave.StudyName
+                                            where q.selected == true
+                                            select q).FirstOrDefault();
+                            if (question != null)
+                            {
 
-                            expecteditem.UniqueId = question.uniqueId;
-                            expecteditem.Equivalence = question.equivalence;
-                            expecteditem.Name = currentname;
-                            expecteditem.Description = currentdescription;
-                            expecteditem.Topic = question.concept;
-                            questions.Where(a => a.variableItem == question.variableItem).SetValue(a => a.removed = true).ToList();
-                            waves.Where(a => a.StudyName == wave.StudyName).SetValue(a => a.Value = question.variableName).ToList();
+                                if (question.description != null) { currentdescription = question.description; }
+                                if (question.name != null) { currentname = question.name; }
+
+                                expecteditem.UniqueId = question.uniqueId;
+                                expecteditem.Equivalence = question.equivalence;
+                                expecteditem.Name = currentname;
+                                expecteditem.Description = currentdescription;
+                                expecteditem.Topic = question.concept;
+                                questions.Where(a => a.variableItem == question.variableItem).SetValue(a => a.removed = true).ToList();
+                                waves.Where(a => a.StudyName == wave.StudyName).SetValue(a => a.Value = question.variableName).ToList();
+                            }
                         }
+                        expecteditem.Waves = waves;
+                        expecteditems.Add(expecteditem);
+                        questions = questions.Where(a => a.removed == false).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
                     }
-                    expecteditem.Waves = waves;
-                    expecteditems.Add(expecteditem);
-                    questions = questions.Where(a => a.removed == false).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
                 }
-
             }
 
 
