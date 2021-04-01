@@ -1111,45 +1111,48 @@ namespace ColecticaSdkMvc.Controllers
 
                 foreach (var variable in variables)
                 {
-                    var latestvariable = from r in variables
-                                         where r.Identifier == variable.Identifier
-                                         group r by r.Identifier into r1
-                                         select new { Identifier = r1.Key, VersionNumber = (from t2 in r1 select t2.Version).Max() };
-                    latestvariable = latestvariable.ToList();
-
-
-                    if (variable.Version == latestvariable.FirstOrDefault().VersionNumber)
+                    if (variable.IsDeprecated == false)
                     {
-                        var concept = Helper.GetReferences(info.AgencyId, info.Identifier).Where(x => x.ItemType == new Guid("5cc915a1-23c9-4487-9613-779c62f8c205")).FirstOrDefault();
-                        EquivalenceItem equivalenceitem = new EquivalenceItem();
-                        equivalenceitem.study = info.AgencyId;
-                        equivalenceitem.name = variable.ItemName.FirstOrDefault().Value;
-                        equivalenceitem.description = variable.Label.FirstOrDefault().Value.Replace(",", ".").Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
-                        equivalenceitem.variableAgency = variable.AgencyId;
-                        equivalenceitem.variableName = variable.ItemName.FirstOrDefault().Value;
-                        equivalenceitem.variableText = variable.Label.FirstOrDefault().Value.Replace(",", ".").Replace("/", " ").Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
-                        if (variable.Label.FirstOrDefault().Value != null) equivalenceitem.variableOrdered = GetOrderedText(variable.Label.FirstOrDefault().Value).Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
-                        equivalenceitem.variableItem = variable.CompositeId.ToString();
-                        equivalenceitem.variableIdentifier = variable.Identifier;
-                        equivalenceitem.questionName = info.ItemName.FirstOrDefault().Value;
-                        equivalenceitem.questionText = info.Summary.FirstOrDefault().Value.Replace(",", ".").Replace("/", " ").Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
-                        if (info.Summary.FirstOrDefault().Value != null) equivalenceitem.questionOrdered = GetOrderedText(info.Summary.FirstOrDefault().Value).Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
-                        equivalenceitem.questionItem = info.CompositeId.ToString();
-                        equivalenceitem.questionIdentifier = info.Identifier;
-                        equivalenceitem.studyGroup = group;
-                        equivalenceitem.set = study;
-                        if (concept != null) equivalenceitem.concept = concept.Label.Values.FirstOrDefault();
-                        if (study == 1) { model.MasterItems.Add(equivalenceitem); }
+                        var latestvariable = from r in variables
+                                             where r.Identifier == variable.Identifier
+                                             group r by r.Identifier into r1
+                                             select new { Identifier = r1.Key, VersionNumber = (from t2 in r1 select t2.Version).Max() };
+                        latestvariable = latestvariable.ToList();
 
-                        var references = Helper.GetReferences(variable.AgencyId, variable.Identifier).Where(x => x.ItemType == new Guid("3b438f9f-e039-4eac-a06d-3fa1aedf48bb")).ToList();
-                        var dataset = Helper.GetReferences(references.FirstOrDefault().AgencyId, references.FirstOrDefault().Identifier).OrderBy(x => x.Version).LastOrDefault();
-                        var dataset3 = client.GetLatestRepositoryItem(dataset.Identifier, dataset.AgencyId);
-                        int spos = dataset3.Item.IndexOf("<r:AlternateTitle>") + 45;
-                        int epos = dataset3.Item.IndexOf("</r:AlternateTitle");
-                        string alttitle = dataset3.Item.Substring(spos, epos - spos).Replace("</r:String>", "");
-                        equivalenceitem.dataset = alttitle;
 
-                        model.AllItems.Add(equivalenceitem);
+                        if (variable.Version == latestvariable.FirstOrDefault().VersionNumber)
+                        {
+                            var concept = Helper.GetReferences(info.AgencyId, info.Identifier).Where(x => x.ItemType == new Guid("5cc915a1-23c9-4487-9613-779c62f8c205")).FirstOrDefault();
+                            EquivalenceItem equivalenceitem = new EquivalenceItem();
+                            equivalenceitem.study = info.AgencyId;
+                            equivalenceitem.name = variable.ItemName.FirstOrDefault().Value;
+                            equivalenceitem.description = variable.Label.FirstOrDefault().Value.Replace(",", ".").Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
+                            equivalenceitem.variableAgency = variable.AgencyId;
+                            equivalenceitem.variableName = variable.ItemName.FirstOrDefault().Value;
+                            equivalenceitem.variableText = variable.Label.FirstOrDefault().Value.Replace(",", ".").Replace("/", " ").Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
+                            if (variable.Label.FirstOrDefault().Value != null) equivalenceitem.variableOrdered = GetOrderedText(variable.Label.FirstOrDefault().Value).Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
+                            equivalenceitem.variableItem = variable.CompositeId.ToString();
+                            equivalenceitem.variableIdentifier = variable.Identifier;
+                            equivalenceitem.questionName = info.ItemName.FirstOrDefault().Value;
+                            equivalenceitem.questionText = info.Summary.FirstOrDefault().Value.Replace(",", ".").Replace("/", " ").Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
+                            if (info.Summary.FirstOrDefault().Value != null) equivalenceitem.questionOrdered = GetOrderedText(info.Summary.FirstOrDefault().Value).Replace("{", "(").Replace("}", ")").Replace("{", "(").Replace("}", ")");
+                            equivalenceitem.questionItem = info.CompositeId.ToString();
+                            equivalenceitem.questionIdentifier = info.Identifier;
+                            equivalenceitem.studyGroup = group;
+                            equivalenceitem.set = study;
+                            if (concept != null) equivalenceitem.concept = concept.Label.Values.FirstOrDefault();
+                            if (study == 1) { model.MasterItems.Add(equivalenceitem); }
+
+                            var references = Helper.GetReferences(variable.AgencyId, variable.Identifier).Where(x => x.ItemType == new Guid("3b438f9f-e039-4eac-a06d-3fa1aedf48bb")).ToList();
+                            var dataset = Helper.GetReferences(references.FirstOrDefault().AgencyId, references.FirstOrDefault().Identifier).OrderBy(x => x.Version).LastOrDefault();
+                            var dataset3 = client.GetLatestRepositoryItem(dataset.Identifier, dataset.AgencyId);
+                            int spos = dataset3.Item.IndexOf("<r:AlternateTitle>") + 45;
+                            int epos = dataset3.Item.IndexOf("</r:AlternateTitle");
+                            string alttitle = dataset3.Item.Substring(spos, epos - spos).Replace("</r:String>", "");
+                            equivalenceitem.dataset = alttitle;
+
+                            model.AllItems.Add(equivalenceitem);
+                        }
                     }
 
                 }
