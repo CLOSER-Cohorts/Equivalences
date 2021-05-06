@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 
 namespace ColecticaSdkMvc.Models
 {
@@ -33,7 +34,15 @@ namespace ColecticaSdkMvc.Models
         public string study { get; set; }
         public string dataset { get; set; }
         public string concept { get; set; }
-
+        public string selectedconcept { get; set; }
+        public string questionconceptitem { get; set; }
+        public string variableconceptitem { get; set; }
+        public IEnumerable<SelectListItem> conceptitems { get; set; }
+        public int concepts { get; set; }
+        public string questiongroupname { get; set; }
+        public string questiongroupitem { get; set; }
+        public string variblegroupname { get; set; }
+        public string variablegroupitem { get; set; }
         public int column { get; set; }
         public bool selected { get; set; }
 

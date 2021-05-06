@@ -46,47 +46,70 @@
 
 <script type="text/javascript">
 
-     //create a user-defined function to download CSV file
+    //create a user-defined function to download CSV file
+    
     function download_csv_file(data) {
         var csvdata = "";
                 
         csvdata = "ID, Search Term, Question Name, Question Text, Question Item, Variable Name, Variable Text, Variable Item, Agency, Study, Concept, Dataset\n";
         var result = JSON.stringify(data).trim();
         result = result.replace('"[', '').replace(']"', '').trim();
+        alert(result);
         while (result.length != 0) {
             if (result.length != 0) { var currentItem = result.substr(result.indexOf("{"), result.indexOf("},")); }           
             result = result.substr(result.indexOf("},") + 2, result.length - result.indexOf("},"));
             if (currentItem.length != 0) {
                 var uniqueid = currentItem.substr(currentItem.indexOf('uniqueId') + 11, currentItem.length - currentItem.indexOf('uniqueId') - 11);
-                uniqueid = uniqueid.substr(0, uniqueid.indexOf(",") + 1).replace(",","");                
+                uniqueid = uniqueid.substr(0, uniqueid.indexOf(",") + 1).replace(",", "");          
+                // alert(uniqueid);
                 var equivalence = currentItem.substr(currentItem.indexOf('equivalence') + 16, currentItem.length - currentItem.indexOf('equivalence') - 16);
                 equivalence = equivalence.substr(0, equivalence.indexOf(",") - 2);
+                // alert(equivalence);
                 var variablename = currentItem.substr(currentItem.indexOf('variableName') + 17, currentItem.length - currentItem.indexOf('variableName') - 17);
                 variablename = variablename.substr(0, variablename.indexOf(",") - 2);
+                // alert(variablename);
                 var variabletext = currentItem.substr(currentItem.indexOf('variableText') + 17, currentItem.length - currentItem.indexOf('variableText') - 17);
                 variabletext = variabletext.substr(0, variabletext.indexOf(",") - 2);
+                // alert(variabletext);
                 var variableitem = currentItem.substr(currentItem.indexOf('variableItem') + 17, currentItem.length - currentItem.indexOf('variableItem') - 17);
                 variableitem = variableitem.substr(0, variableitem.indexOf(",") - 2);
+                // alert(variabletext);
                 var questionname = currentItem.substr(currentItem.indexOf('questionName') + 17, currentItem.length - currentItem.indexOf('questionName') - 17);
                 questionname = questionname.substr(0, questionname.indexOf(",") - 2);
+                // alert(questionname);
                 var questiontext = currentItem.substr(currentItem.indexOf('questionText') + 17, currentItem.length - currentItem.indexOf('questionText') - 17);
                 questiontext = questiontext.substr(0, questiontext.indexOf(",") - 2);
+                // alert(questiontext);
                 var questionitem = currentItem.substr(currentItem.indexOf('questionItem') + 17, currentItem.length - currentItem.indexOf('questionItem') - 17);
                 questionitem = questionitem.substr(0, questionitem.indexOf(",") - 2);
+                // alert(questionitem);
                 var agency = currentItem.substr(currentItem.indexOf('study\\') + 10, currentItem.length - currentItem.indexOf('study\\') - 10);
                 agency = agency.substr(0, agency.indexOf(",") - 2);
+                // alert(questionitem);
                 var study = currentItem.substr(currentItem.indexOf('studyGroup') + 15, currentItem.length - currentItem.indexOf('studyGroup') - 15);
                 study = study.substr(0, study.indexOf(",") - 2);
+                // alert(study);
                 var concept = currentItem.substr(currentItem.indexOf('concept') + 12, currentItem.length - currentItem.indexOf('concept') - 12);
                 concept = concept.substr(0, concept.indexOf(",") - 2);
+                // alert(concept);
+                //var conceptitem = currentItem.substr(currentItem.indexOf('conceptitem') + 16, currentItem.length - currentItem.indexOf('conceptitem') - 16);
+                //conceptitem = conceptitem.substr(0, conceptitem.indexOf(",") - 2);
+                //var concepts = currentItem.substr(currentItem.indexOf('concepts') + 13, currentItem.length - currentItem.indexOf('concepts') - 13);
+                //concepts = concepts.substr(0, concepts.indexOf(",") - 2);
                 var dataset = currentItem.substr(currentItem.indexOf('dataset') + 12, currentItem.length - currentItem.indexOf('dataset') - 12);
                 dataset = dataset.substr(0, dataset.indexOf(",") - 2);
+                // alert(dataset);
                 csvdata = csvdata  + uniqueid + "," + equivalence + "," + questionname + "," + questiontext.replace(",", "").trim() + "," + questionitem + "," + variablename + "," + variabletext.replace(",", " ") + "," +
                     variableitem + "," + agency + "," + study + "," + concept + "," + dataset;
                 csvdata += "\n";
-                //alert(currentItem);
+                // alert(csvdata);
             }
         }
+        alert(csvdata)
+        alert(uniqueid)
+        csvdata = csvdata + uniqueid + "," + equivalence + "," + questionname + "," + questiontext.replace(",", "").trim() + "," + questionitem + "," + variablename + "," + variabletext.replace(",", " ") + "," +
+            variableitem + "," + agency + "," + study + "," + concept + "," + dataset;
+        csvdata += "\n";
         var hiddenElement = document.createElement('a');
         hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvdata);
         hiddenElement.target = '_blank';
@@ -209,6 +232,9 @@
                             @Html.TextBoxFor(modelItem => Model.AllResults[i].study, new { style = "width:98%", @type = "hidden" })
                             @Html.TextBoxFor(modelItem => Model.AllResults[i].dataset, new { style = "width:98%", @type = "hidden" })
                             @Html.TextBoxFor(modelItem => Model.AllResults[i].concept, new { style = "width:98%", @type = "hidden" })
+                            @Html.TextBoxFor(modelItem => Model.AllResults[i].questionconceptitem, new { style = "width:98%", @type = "hidden" })
+                            @Html.TextBoxFor(modelItem => Model.AllResults[i].concepts, new { style = "width:98%", @type = "hidden" })
+                            @Html.TextBoxFor(modelItem => Model.AllResults[i].conceptitems, new { style = "width:98%", @type = "hidden" })
                             @Html.TextBoxFor(modelItem => Model.AllResults[i].column, new { style = "width:98%", @type = "hidden" })
 
                             itemCount++;
@@ -223,9 +249,9 @@
                                 @Html.Raw("<th align=\"left\" style=\"width:40px\">ID</th>")
                                 @Html.Raw("<th align=\"left\" style=\"width:120px\">Search Term</th>")
                                 @Html.Raw("<th align=\"left\" style=\"width:40px\"></th>")
-                                @Html.Raw("<th align=\"left\" style=\"width:250px\">Question Name</th>")
+                                @Html.Raw("<th align=\"left\" style=\"width:150px\">Question Name</th>")
                                 @Html.Raw("<th align=\"left\" style=\"width:600px\">Question Text</th>")
-                                @Html.Raw("<th align=\"left\" style=\"width:250px\">Variable Name</th>")
+                                @Html.Raw("<th align=\"left\" style=\"width:150px\">Variable Name</th>")
                                 @Html.Raw("<th align=\"left\" style=\"width:400px\">Variable Text</th>")
                                 @Html.Raw("<th align=\"left\" style=\"width:100px\">Agency</th>")
                                 @Html.Raw("<th align=\"left\" style=\"width:16%\">Study</th>")
@@ -267,7 +293,6 @@
                                 <td align="left" style="width:16%; margin-top:0">
                                     @Html.DisplayFor(modelItem => Model.AllResults[i].studyGroup, new { style = "width:98%" })
                                 </td>
-
                                 <td valign="top" align="left" style="width:12%; margin-top:0">
                                     @Html.DisplayFor(modelItem => Model.AllResults[i].concept, new { style = "width:98%" })
                                 </td>

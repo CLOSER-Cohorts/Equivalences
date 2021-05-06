@@ -16,9 +16,7 @@ using ColecticaSdkMvc.Models;
 using System.Web.Script.Serialization;
 using System.IO;
 using Newtonsoft.Json;
-// using Syroot.Windows.IO;
-// using System.Text.Json.Seriazlization;
-// using Microsoft.VisualBasic.FileIO;
+using System.Threading.Tasks;
 
 namespace ColecticaSdkMvc.Controllers
 {
@@ -37,7 +35,7 @@ namespace ColecticaSdkMvc.Controllers
 
         }
     }
-  
+
     public class EquivalenceController : Controller
     {
         public ActionResult Index()
@@ -47,11 +45,10 @@ namespace ColecticaSdkMvc.Controllers
             EquivalenceModel model = new EquivalenceModel();
             model = InitialiseModel(model, mymodel, "");
             if (model.AllResults == null) model.AllResults = new List<EquivalenceItem>();
-            // string downloadsPath = new KnownFolder(KnownFolderType.Downloads).Path;
             return View(model);
         }
 
-        public EquivalenceModel InitialiseModel(EquivalenceModel model, EquivalenceModel live,string selectedStudies)
+        public EquivalenceModel InitialiseModel(EquivalenceModel model, EquivalenceModel live, string selectedStudies)
         {
             model.Methods = GetAllMethods();
             model.SelectedMethods = new List<string>();
@@ -62,11 +59,11 @@ namespace ColecticaSdkMvc.Controllers
             if (live != null) { model.Items = live.Items; } else { model.Items = new List<EquivalenceItem>(); }
             if (selectedStudies != "")
                 if (selectedStudies != "")
-            {
-                model.SelectedStudies = DeserializeStudies(model, selectedStudies);
-                ViewBag.selectedItems = selectedStudies;
-            }
-            else { model.SelectedStudies = new List<string>(); }
+                {
+                    model.SelectedStudies = DeserializeStudies(model, selectedStudies);
+                    ViewBag.selectedItems = selectedStudies;
+                }
+                else { model.SelectedStudies = new List<string>(); }
             model.selectStudies = selectedStudies;
             if (model.Datasets == null) model.Datasets = new List<Study>();
             model.Name = false;
@@ -80,16 +77,16 @@ namespace ColecticaSdkMvc.Controllers
         [HttpPost]
         [ValidateInput(false)]
         public ActionResult Index(EquivalenceModel model, string Study, string selectedItems, string originalItems, string fileName, string datasets, string command, HttpPostedFileBase postedFile, HttpPostedFileBase postedFile1)
-       {
+        {
             DateTime start, finish;
 
             EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
             List<EquivalenceItem> items = new List<EquivalenceItem>();
-            if (mymodel != null) {items = mymodel.Items; }
+            if (mymodel != null) { items = mymodel.Items; }
             string wordselection = "";
             model.Methods = GetAllMethods();
             List<TreeViewNode> nodes = new List<TreeViewNode>();
-           
+
             if (postedFile != null)
             {
                 model = GetEquivalences(model, postedFile);
@@ -132,14 +129,13 @@ namespace ColecticaSdkMvc.Controllers
             if (selectedItems != "")
             {
                 selectedstudies = (new JavaScriptSerializer()).Deserialize<List<TreeViewNode>>(selectedItems);
-                //var studies = DeserializeStudies(model, selectedItems);
             }
 
             switch (command)
             {
                 case "Save":
                     EquivalenceModel newmodel = new EquivalenceModel();
-                    newmodel = SaveItem(newmodel, model.Word, model.WordSelection);
+                    model = SaveItem(newmodel, model.Word, model.WordSelection);
                     var wordlist = newmodel.WordList;
                     var selectedwords = newmodel.WordSelection;
                     newmodel.Results = new List<StudyItem>();
@@ -173,7 +169,7 @@ namespace ColecticaSdkMvc.Controllers
                     }
                     else
                     {
-                        
+
                         start = DateTime.Now;
                         EquivalenceModel m2 = ProcessEquivalences(model, mymodel, selectedItems, originalItems, selectedstudies, datasets, "Question", fileName);
                         finish = DateTime.Now;
@@ -183,8 +179,15 @@ namespace ColecticaSdkMvc.Controllers
                         m2.Elapsed = elapsedhours.ToString() + ":" + elapsedminutes.ToString() + ":" + elapseseconds.ToString();
                         ViewBag.selectedItems = selectedItems;
                         ViewBag.originalItems = originalItems;
-                        TempData["EquivalenceModel"] = m2;                        
-                        return View("Display", m2);
+                        TempData["EquivalenceModel"] = m2;
+                        if (m2.AllResults.Where(a => a.concepts > 1).Count() == 0)
+                        {
+                            return View("Display", m2);
+                        }
+                        else
+                        {
+                            return View("Concepts", m2);
+                        }
                     }
                 case "Equivalent Variables":
                     model.EquivalenceError = GetErrors(model, selectedItems);
@@ -221,17 +224,32 @@ namespace ColecticaSdkMvc.Controllers
                         }
                         else
                         {
-                            return View("Display", m3);
+                            if (m3.AllResults.Where(a => a.concepts > 1).Count() == 0)
+                            {
+                                return View("Display", m3);
+                            }
+                            else
+                            {
+                                return View("Concepts", m3);
+                            }
                         }
                     }
                 case "Upload":
                     EquivalenceModel m4 = new EquivalenceModel();
-                    m4 =  FileReader(postedFile1);
+                    m4 = FileReader(postedFile1);
                     model.AllItems = m4.AllItems;
                     model.AllResults = m4.AllResults;
+                    m4.AllItems.SetValue(a => a.selected = true).ToList();
                     model.Datasets = m4.Datasets;
                     ViewBag.AllResults = (new JavaScriptSerializer()).Serialize(m4.AllResults);
-                    return View("Display", model);
+                    if (m4.AllResults.Where(a => a.concepts > 1).Count() == 0)
+                    {
+                        return View("Display", m4);
+                    }
+                    else
+                    {
+                        return View("Concepts", m4);
+                    }
                 default:
                     break;
             }
@@ -253,8 +271,8 @@ namespace ColecticaSdkMvc.Controllers
                 return View(model);
             }
 
-           
-          
+
+
             model = EquivalenceHelper.GetStudies(model, null);
 
             DateTime dateTime2 = DateTime.Now;
@@ -271,7 +289,7 @@ namespace ColecticaSdkMvc.Controllers
             if (selectedItems != "") { selectedStudies = (new JavaScriptSerializer()).Deserialize<List<TreeViewNode>>(selectedItems); }
             foreach (var selectedStudy in selectedStudies)
             {
-                var input = selectedStudy.id.Replace(" ",",") + "," + selectedStudy.text;
+                var input = selectedStudy.id.Replace(" ", ",") + "," + selectedStudy.text;
                 studies.Add(input);
             }
             return studies;
@@ -280,7 +298,7 @@ namespace ColecticaSdkMvc.Controllers
         public List<Study> DeserializeDatasets(string selectedDatasets)
         {
             List<Study> studies = new List<Study>();
-            if (selectedDatasets != "") { if (selectedDatasets != null) studies = (new JavaScriptSerializer()).Deserialize<List<Study>>(selectedDatasets); }        
+            if (selectedDatasets != "") { if (selectedDatasets != null) studies = (new JavaScriptSerializer()).Deserialize<List<Study>>(selectedDatasets); }
             return studies;
         }
 
@@ -316,8 +334,8 @@ namespace ColecticaSdkMvc.Controllers
             int i = 0, j = 0;
             List<TreeViewNode> nodes = new List<TreeViewNode>();
             model.EquivalenceError = null;
-            if (model == null) { model.MasterItems = new List<EquivalenceItem>(); } 
-            if (model == null) { model.AllItems = new List<EquivalenceItem>(); } 
+            if (model == null) { model.MasterItems = new List<EquivalenceItem>(); }
+            if (model == null) { model.AllItems = new List<EquivalenceItem>(); }
             model = LoadSelectedStudies(model, selectedstudies);
             var result = CompareStudyLists(originalItems, selectedItems);
             if (result == false)
@@ -361,17 +379,65 @@ namespace ColecticaSdkMvc.Controllers
 
         [HttpPost]
         [ValidateInput(false)]
+        public ActionResult Concepts(EquivalenceModel model, string studyName, string originalItems, string selectedItems, string itemType, string command)
+        {
+            var test = model.AllResults.Where(a => a.concepts > 1).ToList();
+            List<TreeViewNode> selectedstudies = new List<TreeViewNode>();
+            if (selectedItems != null) { selectedstudies = (new JavaScriptSerializer()).Deserialize<List<TreeViewNode>>(selectedItems); }
+            EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
+
+            switch (command)
+            {
+
+                case "Save CSV":
+                    CSVHelper.ProcessPage1(model.AllResults);
+                    TempData["AllResults"] = model.AllResults;
+                    return View(model);
+                case "Previous":
+                    EquivalenceModel model1 = new EquivalenceModel();
+                    model1 = InitialiseModel(model1, mymodel, selectedItems);
+                    model1.SelectedStudies = model.SelectedStudies;
+                    model1.AllItems = model.AllItems;
+                    model1.AllResults = model.AllResults;
+                    TempData["EquivalenceModel"] = model1;
+                    ViewBag.selectedItems = selectedItems;
+                    ViewBag.originalItems = selectedItems;
+                    if (model1.AllResults.Where(a => a.concepts > 1).Count() == 0)
+                    {
+                        return View("Concepts", model);
+                    }
+                    else
+                    {
+                        return View("Index", model1);
+                    }
+                case "Next":
+                    EquivalenceModel model2 = new EquivalenceModel();
+                    model2.SelectedStudies = model.SelectedStudies;
+                    model2.AllItems = model.AllItems;
+                    model2.AllResults = model.AllResults;
+                    model2.Datasets = model.Datasets;
+                    ViewBag.selectedItems = selectedItems;
+                    TempData["EquivalenceModel"] = model;
+                    var selected = model.AllResults.Where(a => a.selected == true).Count();
+                    var unselected = model.AllResults.Where(a => a.selected == false).Count();
+
+                    return View("Display", model2);
+                default:
+                    return View(model);
+            }
+        }
+        [HttpPost]
+        [ValidateInput(false)]
         public ActionResult Display(EquivalenceModel model, string studyName, string originalItems, string selectedItems, string itemType, string command)
         {
             List<TreeViewNode> selectedstudies = new List<TreeViewNode>();
             if (selectedItems != null) { selectedstudies = (new JavaScriptSerializer()).Deserialize<List<TreeViewNode>>(selectedItems); }
             EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
-            
+
             switch (command)
             {
-               
+
                 case "Save CSV":
-                    // EquivalenceHelper.ProcessCSV(model.AllResults, itemType, model.FileName + " - " + itemType + " - " + studyName + ".csv"); 
                     CSVHelper.ProcessPage1(model.AllResults);
                     TempData["AllResults"] = model.AllResults;
                     return View(model);
@@ -383,11 +449,16 @@ namespace ColecticaSdkMvc.Controllers
                     TempData["EquivalenceModel"] = model1;
                     ViewBag.selectedItems = selectedItems;
                     ViewBag.originalItems = selectedItems;
-                    return View("Index", model1);
+                    if (model.AllResults.Where(a => a.concepts > 1).Count() == 0)
+                    {
+                        return View("Index", model1);
+                    }
+                    else
+                    {
+                        return View("Concepts", model);
+                    }
                 case "Next":
                     EquivalenceModel model2 = new EquivalenceModel();
-                    //model2.AllResults = ProcessSelected(model.AllResults.Where(a => a.selected == true).OrderBy(a => a.uniqueId).ToList());
-                    //model2.AllResults = model.AllResults.Where(a => a.selected == true).OrderBy(a => a.uniqueId).ToList();
                     model2.SelectedStudies = model.SelectedStudies;
                     model2.AllItems = model.AllItems;
                     model2.AllResults = model.AllResults;
@@ -426,7 +497,7 @@ namespace ColecticaSdkMvc.Controllers
                     item.questionIdentifier = result.questionIdentifier;
                     item.studyGroup = result.studyGroup;
                     item.study = result.study;
-                   
+
                     item.concept = result.concept;
                     item.column = result.column;
                     item.selected = result.selected;
@@ -448,7 +519,6 @@ namespace ColecticaSdkMvc.Controllers
 
                 case "Save CSV":
                     model.AllResults = ProcessChanges(model.AllResults);
-                    // EquivalenceHelper.ProcessCSV(model.AllResults, itemType, model.FileName + ".csv");
                     CSVHelper.ProcessPage2(model.AllResults);
                     TempData["EquivalenceModel"] = model;
                     return View(model);
@@ -456,25 +526,21 @@ namespace ColecticaSdkMvc.Controllers
                     TempData["EquivalenceModel"] = model;
                     ViewBag.selectedItems = selectedItems;
 
-                    //model.AllResults.SetValue(a => a.selected = true).ToList();
                     List<EquivalenceItem> items = new List<EquivalenceItem>();
                     foreach (var result in model.AllResults)
                     {
-                        // result.selected = true;
                         items.Add(result);
 
                     }
                     model.AllResults = items;
                     ModelState.Clear();
                     return View("Display", model);
-               case "Next":
-                    // List<VariableItem> newresults = new List<VariableItem>();
+                case "Next":
                     var waves = from r in model.AllResults
                                 group r by r.study into r1
                                 select new { Name = r1.Key };
-                
+
                     ExpectedModel model1 = new ExpectedModel();
-                    //model.AllResults = model.AllResults.Where(a => a.selected == true).OrderBy(a => a.uniqueId).ToList();
                     model1 = GetExpectedItems(model.AllResults);
                     model1.AllItems = model.AllItems;
                     model1.AllResults = ProcessChanges(model.AllResults);
@@ -485,7 +551,7 @@ namespace ColecticaSdkMvc.Controllers
 
                     TempData["EquivalenceModel"] = model;
                     ViewBag.selectedItems = selectedItems;
-                    return View("Waves", model1);              
+                    return View("Waves", model1);
                 default:
                     return View(model);
             }
@@ -508,7 +574,7 @@ namespace ColecticaSdkMvc.Controllers
                 item.description = currentname;
                 item.counter = result.counter;
                 item.questionName = result.questionName;
-                item.questionText = result.questionText;              
+                item.questionText = result.questionText;
                 item.questionItem = result.questionItem;
                 item.questionIdentifier = result.questionIdentifier;
                 item.variableName = currentquestion;
@@ -538,11 +604,10 @@ namespace ColecticaSdkMvc.Controllers
 
                 case "Save CSV":
                     model.AllResults = ProcessChanges(model.AllResults);
-                    // EquivalenceHelper.ProcessCSV(model.AllResults, itemType, model.FileName + ".csv");
                     CSVHelper.ProcessPage3(model.expecteditems);
                     TempData["EquivalenceModel"] = model;
                     return View(model);
-               case "Previous":
+                case "Previous":
                     EquivalenceModel model2 = new EquivalenceModel();
                     model2.AllItems = model.AllItems;
                     model2.AllResults = model.AllResults;
@@ -680,17 +745,10 @@ namespace ColecticaSdkMvc.Controllers
             switch (command)
             {
 
-                case "Save CSV":
-                    //model.AllResults = ProcessChanges(model.AllResults);
-                    //// EquivalenceHelper.ProcessCSV(model.AllResults, itemType, model.FileName + ".csv");
-                    //CSVHelper.ProcessPage4(mymodel.expecteditems);
-                    //model.expecteditems = mymodel.expecteditems;
-                    //TempData["EquivalenceModel"] = model;
-                    //return View(model);
                 case "Previous":
                     ViewBag.selectedItems = selectedItems;
                     model.AllResults.SetValue(a => a.removed = false).ToList();
-                    ExpectedModel model2 = new ExpectedModel();                    
+                    ExpectedModel model2 = new ExpectedModel();
                     model2 = GetExpectedItems(model.AllResults);
                     model2.AllItems = model.AllItems;
                     model2.AllResults = model.AllResults;
@@ -698,10 +756,10 @@ namespace ColecticaSdkMvc.Controllers
                     model2.Datasets = model.Datasets;
                     ViewBag.selectedItems = selectedItems;
                     return View("Waves", model2);
-                case "Next":                
+                case "Next":
 
                     EquivalenceModel model1 = new EquivalenceModel();
-                   
+
                     model1 = InitialiseModel(model1, mymodel, selectedItems);
                     model1.SelectedStudies = model.SelectedStudies;
                     model1.AllItems = model.AllItems;
@@ -733,7 +791,7 @@ namespace ColecticaSdkMvc.Controllers
 
             foreach (var equivalence in equivalences)
             {
-              
+
                 ExpectedItem expecteditem = new ExpectedItem();
                 List<Study> datasets = new List<Study>();
 
@@ -770,16 +828,16 @@ namespace ColecticaSdkMvc.Controllers
                 }
                 expecteditem.Waves = datasets;
                 expecteditems.Add(expecteditem);
-            }            
+            }
 
             model.expecteditems = expecteditems.OrderBy(a => a.UniqueId).ToList();
             return model;
         }
 
-      
+
 
         public List<Study> GetAllDatasets(List<EquivalenceItem> results, List<string> selectedstudies, string selecteditems)
-        {           
+        {
             MultilingualString.CurrentCulture = "en-GB";
             SearchFacet facet = new SearchFacet();
             facet.ItemTypes.Add(new Guid("a51e85bb-6259-4488-8df2-f08cb43485f8"));
@@ -797,12 +855,12 @@ namespace ColecticaSdkMvc.Controllers
 
             foreach (var selecteditem in selectedStudies)
             {
-                datasets1 = datasets.Results.Where(x => x.AgencyId.Contains(selecteditem.parent) == true).OrderBy(x => x.DisplayLabel).ToList(); 
+                datasets1 = datasets.Results.Where(x => x.AgencyId.Contains(selecteditem.parent) == true).OrderBy(x => x.DisplayLabel).ToList();
                 int j = 1;
                 foreach (var dataset in datasets1)
                 {
                     var reference = Helper.GetReferences(dataset.AgencyId, dataset.Identifier).Where(x => x.DisplayLabel == selecteditem.text).ToList();
-                    
+
                     if (reference.Count() != 0)
                     {
                         var dataset3 = client.GetLatestRepositoryItem(dataset.Identifier, dataset.AgencyId);
@@ -818,7 +876,7 @@ namespace ColecticaSdkMvc.Controllers
                     }
                 }
             }
-          
+
             studies = studies.OrderBy(x => x.StudyName).OrderBy(x => x.ID).ToList();
             return studies;
         }
@@ -848,7 +906,7 @@ namespace ColecticaSdkMvc.Controllers
             }
 
             return items;
-        }     
+        }
 
         public static EquivalenceModel ProcessStudies(EquivalenceModel model)
         {
@@ -881,7 +939,7 @@ namespace ColecticaSdkMvc.Controllers
 
         public List<VariableItem> ProcessResults(RepositoryItemMetadata result, List<VariableItem> items, EquivalenceModel model, string equivalence, int uniqueId, int counter)
         {
-           
+
             var variables = RepositoryHelper.GetReferences(result.AgencyId, result.Identifier).Where(x => x.ItemType == new Guid("683889c6-f74b-4d5e-92ed-908c0a42bb2d"));
             foreach (var variable in variables)
             {
@@ -913,16 +971,15 @@ namespace ColecticaSdkMvc.Controllers
                 items.Add(item);
                 item.uniqueId = uniqueId;
                 item.equivalence = equivalence.Trim();
-                // item.column = RepositoryHelper.GetStudyColumn(item.study, model.StudyId);
                 item.selected = true;
                 item.isdeprecated = variable.IsDeprecated;
-            }           
+            }
             return items;
         }
 
         public EquivalenceModel PopulateQuestionMessages(EquivalenceModel model, List<TreeViewNode> selecteditems, string type, int i, int j)
         {
-            List<EquivalenceItem> equivalenceitems = new List<EquivalenceItem>();    
+            List<EquivalenceItem> equivalenceitems = new List<EquivalenceItem>();
             if (model.AllResults == null) { model.AllResults = new List<EquivalenceItem>(); }
             List<Word> words1 = new List<Word>();
 
@@ -933,7 +990,7 @@ namespace ColecticaSdkMvc.Controllers
             {
 
                 equivalenceitems = model.AllItems;
-                List<Word>  words2 = new List<Word>();
+                List<Word> words2 = new List<Word>();
                 List<string> wordList2 = selectedwords.Value.Split(' ').ToList();
                 foreach (var word2 in wordList2)
                 {
@@ -944,7 +1001,6 @@ namespace ColecticaSdkMvc.Controllers
                 string selectedword = "";
                 foreach (var currentword in words2)
                 {
-                    // selectedword = " " + currentword.Value + " ";
                     selectedword = currentword.Value;
                     switch (type)
                     {
@@ -983,6 +1039,10 @@ namespace ColecticaSdkMvc.Controllers
 
                 if (equivalenceitems.Count != 0)
                 {
+
+                    var conceptitems = (from r in equivalenceitems
+                                        group r by r.questionconceptitem into r1
+                                        select new SelectListItem { Text = r1.Key.ToString(), Value = r1.Key.ToString() }).ToList();
                     i++;
 
                     foreach (var result in equivalenceitems)
@@ -1003,6 +1063,8 @@ namespace ColecticaSdkMvc.Controllers
                         item.studyGroup = result.studyGroup;
                         item.dataset = result.dataset;
                         item.concept = result.concept;
+                        item.questionconceptitem = result.questionconceptitem;
+                        item.concepts = conceptitems.Count;
                         item.study = result.study;
 
                         item.uniqueId = i;
@@ -1010,12 +1072,25 @@ namespace ColecticaSdkMvc.Controllers
                         item.column = waves.Where(a => a.StudyName == result.studyGroup).Select(a => { return a.ID; }).FirstOrDefault();
                         item.selected = true;
                         item.dataset = result.dataset;
-                        model.AllResults.Add(item);
+                        if (conceptitems.Count > 1)
+                        {
+                            item.conceptitems = conceptitems;
+                            model.AllResults.Add(item);
+                        }
+                        else
+                        {
+                            model.AllResults.Add(item);
+                        }
 
 
                     }
                 }
             }
+
+            var topics = (from r in model.AllResults
+                          group r by r.uniqueId into r1
+                          select new { Name = r1.Key, counter = r1.Count() }).ToList();
+
             model.AllResults = model.AllResults.OrderBy(x => x.dataset).OrderBy(x => x.uniqueId).ToList();
             return model;
         }
@@ -1047,7 +1122,7 @@ namespace ColecticaSdkMvc.Controllers
                 }
                 model.WordList = equivalences;
                 model.Results = new List<StudyItem>();
-                model.FileName = postedFile.FileName.Replace(".csv","");
+                model.FileName = postedFile.FileName.Replace(".csv", "");
                 return model;
             }
             catch (Exception ex)
@@ -1069,12 +1144,12 @@ namespace ColecticaSdkMvc.Controllers
             return model;
         }
 
-       
+
         public ActionResult DeleteItem(string selectedItems, string word, string wordselection)
         {
             // keep
             wordselection = wordselection.Replace(word + ",", "");
-            return RedirectToAction("Equivalences", new { wordselection = wordselection });
+            return RedirectToAction("Equivalence", new { wordselection = wordselection });
         }
 
         public EquivalenceModel LoadSelectedStudies(EquivalenceModel model, List<TreeViewNode> items)
@@ -1114,7 +1189,8 @@ namespace ColecticaSdkMvc.Controllers
             {
 
                 var variables = Helper.GetReferences(info.AgencyId, info.Identifier).Where(x => x.ItemType == new Guid("683889c6-f74b-4d5e-92ed-908c0a42bb2d")).ToList();
-
+                var reference = Helper.GetReferences(info.AgencyId, info.Identifier).Where(x => x.ItemType == new Guid("5cc915a1-23c9-4487-9613-779c62f8c205")).ToList();
+                if (reference.Count != 0) { var questiongroup = client.GetRepositoryItem(reference.FirstOrDefault().Identifier, reference.FirstOrDefault().AgencyId, reference.FirstOrDefault().Version); }
                 foreach (var variable in variables)
                 {
                     if (variable.IsDeprecated == false)
@@ -1146,7 +1222,12 @@ namespace ColecticaSdkMvc.Controllers
                             equivalenceitem.questionIdentifier = info.Identifier;
                             equivalenceitem.studyGroup = group;
                             equivalenceitem.set = study;
-                            if (concept != null) equivalenceitem.concept = concept.Label.Values.FirstOrDefault();
+                            if (concept != null)
+                            {
+                                equivalenceitem.concept = concept.Label.Values.FirstOrDefault();
+                                equivalenceitem.questionconceptitem = concept.CompositeId.ToString();
+
+                            }
                             if (study == 1) { model.MasterItems.Add(equivalenceitem); }
 
                             var references = Helper.GetReferences(variable.AgencyId, variable.Identifier).Where(x => x.ItemType == new Guid("3b438f9f-e039-4eac-a06d-3fa1aedf48bb")).ToList();
@@ -1199,7 +1280,7 @@ namespace ColecticaSdkMvc.Controllers
                 results.OrderBy(x => x.variableItem);
                 foreach (var item in results)
                 {
-                    line = item.variableName + "," + item.variableText.Trim().Replace(",", " ") + "," + item.variableItem; 
+                    line = item.variableName + "," + item.variableText.Trim().Replace(",", " ") + "," + item.variableItem;
                     file.WriteLine(line);
                 }
             }
@@ -1226,17 +1307,17 @@ namespace ColecticaSdkMvc.Controllers
         {
             string ordered = "";
             GFG gg = new GFG();
-            List<string> words = sentance.Split(' ').ToList();           
+            List<string> words = sentance.Split(' ').ToList();
             words.Sort(gg);
 
             foreach (var word in words)
             {
                 if (word.Length > 3) ordered = ordered + word + " ";
             }
-           
-            
+
+
             return ordered;
-        }      
+        }
 
         private List<SelectListItem> GetAllMethods()
         {
@@ -1257,22 +1338,22 @@ namespace ColecticaSdkMvc.Controllers
                     switch (method)
                     {
                         case "Match Text":
-                            allresults = Method1(items, master, type, "text",i,j);
+                            allresults = Method1(items, master, type, "text", i, j);
                             break;
                         case "Match All Words":
-                            allresults = Method1(items, master,type, "words",i, j);
+                            allresults = Method1(items, master, type, "words", i, j);
                             break;
                     }
                 }
             }
             return allresults;
-           
+
         }
 
         private List<EquivalenceItem> Method1(List<EquivalenceItem> items, List<EquivalenceItem> master, string type, string method, int i, int j)
         {
             var waves = GetAllStudies(items);
-            List<EquivalenceItem> allresults = new List<EquivalenceItem>();             
+            List<EquivalenceItem> allresults = new List<EquivalenceItem>();
             var item3 = items.Where(x => x.set == 1).OrderBy(x => x.questionText).ToList();
             List<EquivalenceItem> record2 = new List<EquivalenceItem>();
             foreach (var record1 in item3)
@@ -1304,7 +1385,7 @@ namespace ColecticaSdkMvc.Controllers
                         }
                         break;
                 }
-                        
+
                 if (record2.Count > 1)
                 {
                     i++;
@@ -1313,7 +1394,7 @@ namespace ColecticaSdkMvc.Controllers
                         j++;
                         EquivalenceItem item = new EquivalenceItem();
                         item = record;
-                        item.counter = j;                        
+                        item.counter = j;
                         item.uniqueId = i;
                         switch (method)
                         {
@@ -1329,7 +1410,7 @@ namespace ColecticaSdkMvc.Controllers
                         allresults.Add(item);
                         items.Where(a => a.variableItem == record.variableItem).SetValue(a => a.removed = true).ToList();
                         var removed2 = items.Where(a => a.removed == true).ToList().Count;
-                    }                   
+                    }
                 }
             }
             var removed = items.Where(a => a.removed == true).ToList();
@@ -1340,9 +1421,11 @@ namespace ColecticaSdkMvc.Controllers
         {
             EquivalenceModel model = new EquivalenceModel();
             List<EquivalenceItem> equivalences = new List<EquivalenceItem>();
+            List<EquivalenceItem> equivalences2 = new List<EquivalenceItem>();
+
             model.Datasets = new List<Study>();
 
-             string sFileContents = "";
+            string sFileContents = "";
 
             using (var oStreamReader = new StreamReader(postedFile.InputStream))
             {
@@ -1363,30 +1446,92 @@ namespace ColecticaSdkMvc.Controllers
                 if (i != 0)
                 {
                     EquivalenceItem equivalence = new EquivalenceItem();
+                    var id = oCsvItem[4].Substring(oCsvItem[4].IndexOf(":") + 1);
+                    id = id.Substring(0, id.IndexOf(":"));
+                    var concept = Helper.GetReferences(oCsvItem[4].ToString().Substring(0, oCsvItem[4].IndexOf(":")), new Guid(id)).Where(x => x.ItemType == new Guid("5cc915a1-23c9-4487-9613-779c62f8c205")).FirstOrDefault();
+                    if (concept != null)
+                    {
+                        equivalence.questionconceptitem = concept.CompositeId.ToString();
+                    }
+
                     equivalence.equivalence = oCsvItem[1];
                     equivalence.questionName = oCsvItem[2];
                     equivalence.questionText = oCsvItem[3];
                     equivalence.questionItem = oCsvItem[4];
                     equivalence.variableName = oCsvItem[5];
                     equivalence.variableText = oCsvItem[6];
-                    equivalence.variableItem = oCsvItem[7];                  
+                    equivalence.variableItem = oCsvItem[7];
                     equivalence.study = oCsvItem[8];
                     equivalence.studyGroup = oCsvItem[9];
                     equivalence.concept = oCsvItem[10];
                     equivalence.dataset = oCsvItem[11];
                     equivalence.name = oCsvItem[5];
                     equivalence.description = oCsvItem[6];
-                    //string uniqueid = oCsvItem[0].Replace("Same Text ", "");
-                    //equivalence.uniqueId = Convert.ToInt16(uniqueid);
-                    equivalence.uniqueId = Convert.ToInt16(oCsvItem[0]);                   
+                    equivalence.uniqueId = Convert.ToInt16(oCsvItem[0]);
                     equivalences.Add(equivalence);
                 }
                 i++;
             }
             equivalences.SetValue(a => a.selected = true).ToList();
+            int counter = 1;
+            var conceptitems = (from r in equivalences
+                                where r.uniqueId == 1
+                                group r by r.concept into r1
+                                select new SelectListItem { Text = r1.Key.ToString(), Value = r1.Key.ToString() }).ToList();
 
-            model.AllItems = equivalences;
-            model.AllResults = equivalences; ;
+            foreach (var equivalence in equivalences)
+            {
+
+                if (equivalence.uniqueId != counter)
+                {
+                    conceptitems = (from r in equivalences
+                                    where r.uniqueId == equivalence.uniqueId
+                                    group r by r.concept into r1
+                                    select new SelectListItem { Text = r1.Key.ToString(), Value = r1.Key.ToString() }).ToList();
+                }
+
+                EquivalenceItem equivalence2 = new EquivalenceItem();
+                equivalence2.equivalence = equivalence.equivalence;
+                equivalence2.questionName = equivalence.questionName;
+                equivalence2.questionText = equivalence.questionText;
+                equivalence2.questionItem = equivalence.questionItem;
+                equivalence2.variableName = equivalence.variableName;
+                equivalence2.variableText = equivalence.variableText;
+                equivalence2.variableItem = equivalence.variableItem;
+                equivalence2.study = equivalence.study;
+                equivalence2.studyGroup = equivalence.studyGroup;
+                equivalence2.concept = equivalence.concept;
+                equivalence2.questionconceptitem = equivalence.questionconceptitem;
+                equivalence2.dataset = equivalence.dataset;
+                equivalence2.name = equivalence.name;
+                equivalence2.description = equivalence.description;
+                equivalence2.uniqueId = equivalence.uniqueId;
+                equivalence2.concepts = conceptitems.Count;
+
+                if (conceptitems.Count > 1)
+                {
+                    equivalence2.conceptitems = conceptitems;
+                }
+                counter = equivalence.uniqueId;
+                List<string> selecteditems = equivalence2.questionconceptitem.Split(':').ToList();
+           
+                selecteditems = equivalence.questionItem.Split(':').ToList();
+                var questionitem = client.GetRepositoryItem(new Guid(selecteditems[1]), selecteditems[0], Convert.ToInt32(selecteditems[2]));
+                selecteditems = equivalence.questionconceptitem.Split(':').ToList();
+                var conceptitem = client.GetRepositoryItem(new Guid(selecteditems[1]), selecteditems[0], Convert.ToInt32(selecteditems[2]));
+
+                selecteditems = equivalence.questionItem.Split(':').ToList();
+                var questionreferences = Helper.GetReferences(selecteditems[0], new Guid(selecteditems[1]));
+                selecteditems = equivalence.variableItem.Split(':').ToList();
+                var variableconcept = Helper.GetReferences(selecteditems[0], new Guid(selecteditems[1])).Where(a => a.ItemType == new Guid("91da6c62-c2c2-4173-8958-22c518d1d40d")).ToList();
+                selecteditems = variableconcept.FirstOrDefault().CompositeId.ToString().Split(':').ToList();
+                equivalence2.variableconceptitem = variableconcept.FirstOrDefault().CompositeId.ToString();
+                equivalences2.Add(equivalence2);
+
+            }
+
+            model.AllItems = equivalences2;
+            model.AllResults = equivalences2;
 
             var waves = from r in model.AllItems
                         group r by r.dataset into r1
@@ -1403,7 +1548,6 @@ namespace ColecticaSdkMvc.Controllers
                     Study dataset = new Study();
                     dataset.ID = k;
                     dataset.StudyName = wave.Name;
-                    // dataset.Value = group;
                     model.Datasets.Add(dataset);
                     k++;
                 }
@@ -1412,7 +1556,48 @@ namespace ColecticaSdkMvc.Controllers
             return model;
 
         }
+
+        [HttpPost]
+        public ContentResult ChangeTheValue(EquivalenceModel model)
+        {
+            string OutputCSV = null;
+            var m = new EquivalenceModel();
+            m.AllItems = model.AllItems;
+            m.AllResults = model.AllResults.Where(a => a.concepts > 1).ToList();
+            m.Datasets = model.Datasets;
+            var allresults = model.AllResults.Where(a => a.concepts > 1).Where(a => a.selectedconcept != null).ToList();
+            OutputCSV = "Question Item URN, Question Group URN, New Topic, Related Variables\n";
+            foreach (var allresult in allresults)
+            {
+                OutputCSV = OutputCSV + allresult.questionItem + ", " + allresult.questionconceptitem + ", " + allresult.selectedconcept + ", ";
+                var test = model.AllItems.Where(a => a.concept == allresult.concept).ToList();
+
+                var relatedvariables = model.AllResults.Where(a => a.questionItem == allresult.selectedconcept).ToList();
+                foreach (var relatedvariable in relatedvariables)
+                {
+                    OutputCSV = OutputCSV + relatedvariable.variableItem + ";";
+                }
+                OutputCSV = OutputCSV + "\n";
+                // m.AllResults.Where(a => a.questionconceptitem == allresult.questionconceptitem).SetValue(a => a.selectedconcept = allresult.selectedconcept).ToList();
+
+            }
+            m.OutputCsv = "Changed"; //  OutputCSV;
+            //m.Str = m.Str + " Changed! ";
+            //m.Integer++;
+            var m2 = m.AllResults.Where(a => a.selectedconcept != null).ToList();
+            var serializer = new JavaScriptSerializer();
+            var viewModel = new EquivalenceModel();
+            //var json = JsonConvert.SerializeObject(m);
+            // return Json(m.OutputCsv);
+            return Content(OutputCSV);
+
+            // return RedirectToAction("Concepts", "Equivalences", m);
+            // return View("Concepts",json);
+
+        }
+
     }
+    
 
    
 
@@ -1421,6 +1606,7 @@ namespace ColecticaSdkMvc.Controllers
         public static IEnumerable<T> SetValue<T>(this IEnumerable<T> items, Action<T>
              updateMethod)
         {
+            var counter = items.Count();
             foreach (T item in items)
             {
                 updateMethod(item);

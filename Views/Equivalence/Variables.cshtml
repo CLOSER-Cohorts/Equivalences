@@ -78,6 +78,9 @@
                 csvdata += "\n";
             }
         }
+        csvdata = csvdata + equivalence + "," + vname + "," + vdescription + "," + variablename + "," + variabletext.replace(",", "").trim() + "," + variableitem + "," + questionname + "," + questiontext.replace(",", " ") + "," +
+            questionitem;
+        csvdata += "\n";
         var hiddenElement = document.createElement('a');
         hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvdata);
         hiddenElement.target = '_blank';
@@ -191,6 +194,9 @@
                         @Html.TextBoxFor(modelItem => Model.AllResults[i].study, new { style = "width:98%", @type = "hidden" })
                         @Html.TextBoxFor(modelItem => Model.AllResults[i].dataset, new { style = "width:98%", @type = "hidden" })
                         @Html.TextBoxFor(modelItem => Model.AllResults[i].concept, new { style = "width:98%", @type = "hidden" })
+                        @Html.TextBoxFor(modelItem => Model.AllResults[i].conceptitem, new { style = "width:98%", @type = "hidden" })
+                        @Html.TextBoxFor(modelItem => Model.AllResults[i].concepts, new { style = "width:98%", @type = "hidden" })
+                        @Html.TextBoxFor(modelItem => Model.AllResults[i].conceptitems, new { style = "width:98%", @type = "hidden" })
                         @Html.TextBoxFor(modelItem => Model.AllResults[i].column, new { style = "width:98%", @type = "hidden" })
                         @Html.TextBoxFor(modelItem => Model.AllResults[i].selected, new { style = "width:98%", @type = "hidden" })
 

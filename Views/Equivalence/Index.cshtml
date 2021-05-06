@@ -154,7 +154,7 @@
                                         <tr>
                                             <td style="width:85%">@Model.WordList[i].Value</td>
                                             <td style="width:15%">
-                                                <input style="float:right" type="button" title="Delete" value="Delete" onclick="location.href='@Url.Action("DeleteItem", "QuestionItem", new { selectedItems = Model.GetString(Model.SelectedStudies), word = Model.Word, wordselection = Model.WordSelection }) })'" />
+                                                <input style="float:right" type="button" title="Delete" value="Delete" onclick="location.href='@Url.Action("DeleteItem", "Equivalence", new { selectedItems = Model.GetString(Model.SelectedStudies), word = Model.Word, wordselection = Model.WordSelection }) })'" />
                                             </td>
                                         </tr>
                                     }
