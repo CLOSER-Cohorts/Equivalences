@@ -1548,8 +1548,8 @@ namespace ColecticaSdkMvc.Controllers
             }
            
             JavaScriptSerializer serializer = new JavaScriptSerializer();
-            var test2 = serializer.Serialize(OutputCSV); 
-            return Content(test2);
+            var outputcsv = serializer.Serialize(OutputCSV); 
+            return Content(outputcsv);
 
         }
     }
