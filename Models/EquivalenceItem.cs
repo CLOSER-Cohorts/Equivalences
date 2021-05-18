@@ -8,7 +8,7 @@ using System.Web.Mvc;
 namespace ColecticaSdkMvc.Models
 {
     public class EquivalenceItem
-    {        
+    {
         public int uniqueId { get; set; }
         public string equivalence { get; set; }
         public int set { get; set; }

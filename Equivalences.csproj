@@ -172,6 +172,7 @@
     <Compile Include="Models\EquivalenceModel.cs" />
     <Compile Include="Models\ExpectedItem.cs" />
     <Compile Include="Models\ExpectedModel.cs" />
+    <Compile Include="Models\OutputItem.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\ItemModel.cs" />
     <Compile Include="Models\ItemTypesModel.cs" />
