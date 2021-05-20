@@ -70,6 +70,7 @@
                     @Html.TextBoxFor(modelItem => Model.AllItems[i].questionText, new { style = "width:98%", @type = "hidden" })
                     @Html.TextBoxFor(modelItem => Model.AllItems[i].questionItem, new { style = "width:98%", @type = "hidden" })
                     @Html.TextBoxFor(modelItem => Model.AllItems[i].questionIdentifier, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.AllItems[i].questionconceptitem, new { style = "width:98%", @type = "hidden" })
                     @Html.TextBoxFor(modelItem => Model.AllItems[i].questionOrdered, new { style = "width:98%", @type = "hidden" })
                     @Html.TextBoxFor(modelItem => Model.AllItems[i].variableOrdered, new { style = "width:98%", @type = "hidden" })
                     @Html.TextBoxFor(modelItem => Model.AllItems[i].studyGroup, new { style = "width:97%", @type = "hidden" })
@@ -89,12 +90,12 @@
         <input type="hidden" style="width:100%" value="@ViewBag.Datasets" name="originalItems" id="Datasets" />
 
         @Html.HiddenFor(x => x.Type)
-        @Html.HiddenFor(x => x.StudyName)        
+        @Html.HiddenFor(x => x.StudyName)
         <div style="margin-top:10px; width:100%">
 
             <div style="width:33%; float:right; height:80vh">
                 <div style="margin-top:5px; color:red"><h3>@Model.EquivalenceError</h3></div>
-                <h4>Index</h4>               
+                <h4>Index</h4>
                 <div style="width:100%">
                     <h5>
                         There are a number of methods for matching equivalences in Studies. The methods below
@@ -119,7 +120,7 @@
                         <label style="margin-left:5px">Match Name</label>
                         @Html.RadioButtonFor(model => model.Name, "false", new { style = "margin-left:10px" })
                         <label>Match Text</label>
-                    </div>                   
+                    </div>
                     <div style="width:100%; margin-bottom:5px; float:left">
                         <h5>
                             Please select the equivalences to be analysed and then sweep(s) to be used with these equivalences
@@ -167,7 +168,8 @@
                     <input name="command" type="submit" value="Equivalent Questions" id="searchq" , style="font-size:small;width:49%" />
                     <input name="command" type="submit" value="Equivalent Variables" id="searchv" , style="font-size:small;width:49%" />
                     <div style="width:100%; margin-bottom:5px; float:left">
-                        <h5 style="text-align:center">or Select processed Equivalent items to Upload ....
+                        <h5 style="text-align:center">
+                            or Select processed Equivalent items to Upload ....
                         </h5>
                     </div>
                     <div style="width:100%; margin-top:5px">

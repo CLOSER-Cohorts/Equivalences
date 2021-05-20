@@ -42,26 +42,24 @@ namespace ColecticaSdkMvc.Controllers
     {
         public ActionResult Index()
         {
-
             // This is the Controller action for the main screen on Equivalences where the user selects the options to be used in selecting Equivalences for analysis
 
-            EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
-            if (mymodel != null) mymodel.SelectedStudies = new List<string>();
             EquivalenceModel model = new EquivalenceModel();
-            model = InitialiseModel(model, mymodel, "");
+            model = InitialiseModel(model, "");
             if (model.AllResults == null) model.AllResults = new List<EquivalenceItem>();
             return View(model);
         }
 
-        public EquivalenceModel InitialiseModel(EquivalenceModel model, EquivalenceModel live,string selectedStudies)
+        public EquivalenceModel InitialiseModel(EquivalenceModel model,string selectedStudies)
         {
             model.Methods = GetAllMethods();
             model.SelectedMethods = new List<string>();
             model.WordList = new List<Word>();
 
-            if (live != null) { model.AllItems = live.AllItems; } else { model.AllItems = new List<EquivalenceItem>(); }
-            if (live != null) { model.MasterItems = live.MasterItems; } else { model.MasterItems = new List<EquivalenceItem>(); }
-            if (live != null) { model.Items = live.Items; } else { model.Items = new List<EquivalenceItem>(); }
+            model.AllItems = new List<EquivalenceItem>(); 
+            model.MasterItems = new List<EquivalenceItem>(); 
+            model.Items = new List<EquivalenceItem>(); 
+
             if (selectedStudies != "")            
             {
                 model.SelectedStudies = DeserializeStudies(model, selectedStudies);
@@ -84,48 +82,19 @@ namespace ColecticaSdkMvc.Controllers
        {
             // This is the Controller action for the main screen on Equivalences where the user selects the options to be used in selecting Equivalences for analysis
 
+            // There are five options controlled through a case statement. The options in the case statement correspond to buttons on the Index view
+            // Upload Equivalences will upload a list of equivalences from a csv file for analysis for studies
+            // Save will add an equivalence to the list of equivalences for analysis for studies
+            // Equivalent Question will load up the questions and variables and find equivalant questions for matching question name, matching question text or equivalences.
+            // Equivalent Variable will load up the questions and variables and find equivalant variable for matching question name, matching question text or equivalences.
+            // Upload will load a csv of equivalences generated from the Display view using the Save CSV button
+
             DateTime start, finish;
 
-            EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
-            List<EquivalenceItem> items = new List<EquivalenceItem>();
-            if (mymodel != null) {items = mymodel.Items; }
             string wordselection = "";
             model.Methods = GetAllMethods();
-            List<TreeViewNode> nodes = new List<TreeViewNode>();
-           
-            if (postedFile != null)
-            {
-                model = GetEquivalences(model, postedFile);
-                model.Methods = GetAllMethods();
-                if (mymodel == null)
-                {
-                    model.SelectedMethods = new List<string>();
-                }
-                else
-                {
-                    if (mymodel.SelectedMethods == null)
-                    {
-                        model.SelectedMethods = new List<string>();
-                    }
-                    else
-                    {
-                        model.SelectedMethods = mymodel.SelectedMethods;
-                    }
-                }
-                if (mymodel == null) { model.SelectedStudies = new List<string>(); } else { model.SelectedStudies = mymodel.SelectedStudies; }
-                if (mymodel == null) { model.AllItems = new List<EquivalenceItem>(); } else { model.AllItems = mymodel.AllItems; }
-                if (mymodel == null) { model.MasterItems = new List<EquivalenceItem>(); } else { model.MasterItems = mymodel.MasterItems; }
-                if (model.AllResults == null) model.AllResults = new List<EquivalenceItem>();
-                if (model.Datasets == null) model.Datasets = new List<Study>();
-                model = EquivalenceHelper.BuildStudiesTree(model, nodes);
-                ViewBag.Json = (new JavaScriptSerializer()).Serialize(nodes);
-                model.SelectedStudies = DeserializeStudies(model, selectedItems);
-                ViewBag.selectedItems = selectedItems;
-                ViewBag.originalItems = originalItems;
-                ViewBag.Datasets = datasets;
-                TempData["EquivalenceModel"] = model;
-                return View(model);
-            }
+            List<TreeViewNode> nodes = new List<TreeViewNode>();           
+          
             model.Results = new List<StudyItem>();
             model = EquivalenceHelper.BuildStudiesTree(model, nodes);
             model.SelectedStudies = new List<string>();
@@ -153,9 +122,32 @@ namespace ColecticaSdkMvc.Controllers
                     newmodel.SelectedMethods = new List<string>();
                     newmodel.AllItems = new List<EquivalenceItem>();
                     newmodel.MasterItems = new List<EquivalenceItem>();
-                    if (mymodel == null) newmodel.SelectedMethods = new List<string>();
                     ViewBag.Json = (new JavaScriptSerializer()).Serialize(nodes);
                     return View(newmodel);
+                case "Upload Equivalences":
+                    if (postedFile != null)
+                    {
+                        model = GetEquivalences(model, postedFile);
+                        model.Methods = GetAllMethods();                      
+                        if (model.SelectedMethods == null) { model.SelectedMethods = new List<string>(); }
+                        if (model.AllResults == null) model.AllResults = new List<EquivalenceItem>();
+                        if (model.Datasets == null) model.Datasets = new List<Study>();
+                        ViewBag.Json = (new JavaScriptSerializer()).Serialize(nodes);
+                        model.SelectedStudies = DeserializeStudies(model, selectedItems);
+                        ViewBag.selectedItems = selectedItems;
+                        ViewBag.originalItems = originalItems;
+                        ViewBag.Datasets = datasets;
+                        return View(model);
+                    }
+                    else
+                    {
+                        if (model.WordList == null) { model.WordList = new List<Word>(); }
+                        if (model.SelectedMethods == null) { model.SelectedMethods = new List<string>(); }
+                        ViewBag.Json = (new JavaScriptSerializer()).Serialize(nodes);
+                        return View(model);
+
+                    }
+                    break;
                 case "Equivalent Questions":
                     model.EquivalenceError = GetErrors(model, selectedItems);
                     if (model.EquivalenceError != null)
@@ -185,15 +177,7 @@ namespace ColecticaSdkMvc.Controllers
                         newmodel.Elapsed = elapsedhours.ToString() + ":" + elapsedminutes.ToString() + ":" + elapseseconds.ToString();
                         ViewBag.selectedItems = selectedItems;
                         ViewBag.originalItems = originalItems;
-                        TempData["EquivalenceModel"] = newmodel;
-                        if (newmodel.AllResults.Where(a => a.concepts > 1).Count() == 0)
-                        {
-                            return View("Display", newmodel);
-                        }
-                        else
-                        {
-                            return View("Concepts", newmodel);
-                        }
+                        return newmodel.AllResults.Where(a => a.concepts > 1).Count() == 0 ? View("Display", newmodel) : View("Concepts", newmodel);
                     }
                 case "Equivalent Variables":
                     model.EquivalenceError = GetErrors(model, selectedItems);
@@ -217,7 +201,6 @@ namespace ColecticaSdkMvc.Controllers
                         newmodel = ProcessEquivalences(model, selectedItems, originalItems, selectedstudies, datasets, "Variable", fileName);
                         newmodel.AllResults = DetectMultipleEquivalences(newmodel.AllResults);
                         ViewBag.selectedItems = selectedItems;
-                        TempData["EquivalenceModel"] = newmodel;
                         finish = DateTime.Now;
                         var elapsedhours = (finish - start).Hours;
                         var elapsedminutes = (finish - start).Minutes;
@@ -225,20 +208,13 @@ namespace ColecticaSdkMvc.Controllers
                         newmodel.Elapsed = elapsedhours.ToString() + ":" + elapsedminutes.ToString() + ":" + elapseseconds.ToString();
                         if (newmodel.AllResults.Count == 0)
                         {
-                            newmodel = InitialiseModel(model, mymodel, selectedItems);
+                            newmodel = InitialiseModel(model, selectedItems);
                             newmodel.EquivalenceError = "No matching Items";
                             return View(newmodel);
                         }
                         else
                         {
-                            if (newmodel.AllResults.Where(a => a.concepts > 1).Count() == 0)
-                            {
-                                return View("Display", newmodel);
-                            }
-                            else
-                            {
-                                return View("Concepts", newmodel);
-                            }
+                            return newmodel.AllResults.Where(a => a.concepts > 1).Count() == 0 ? View("Display", newmodel) : View("Concepts", newmodel);
                         }
                     }
                 case "Upload":
@@ -251,16 +227,11 @@ namespace ColecticaSdkMvc.Controllers
                     var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
                     serializer.MaxJsonLength = Int32.MaxValue;
                     ViewBag.AllResults = serializer.Serialize(newmodel.AllResults);
-                    if (model.AllResults.Where(a => a.concepts > 1).Count() == 0)
-                    {
-                        return View("Display", model);
-                    }
-                    else
-                    {
-                        return View("Concepts", model);
-                    }
+                    return model.AllResults.Where(a => a.concepts > 1).Count() == 0 ? View("Display", model) : View("Concepts", model);
                 default:
-                    break;
+                    if (model.SelectedMethods == null) { model.SelectedMethods = new List<string>(); }
+                    ViewBag.Json = (new JavaScriptSerializer()).Serialize(nodes);
+                    return View(model);
             }
 
             DateTime dateTime1 = DateTime.Now;
@@ -269,11 +240,14 @@ namespace ColecticaSdkMvc.Controllers
 
             model = EquivalenceHelper.GetStudies(model, null);
             model.SelectedStudies = new List<string>();
-            if (wordselection == null) model.WordList = new List<Word>();
-            else
+            if (wordselection != null)
             {
                 if (wordselection.Length != 0) model.WordList = EquivalenceHelper.GetList(wordselection);
                 if (wordselection.Length == 0) model.WordList = new List<Word>();
+            }
+            else
+            {
+                model.WordList = new List<Word>();
             }
             if (selectedItems == "")
             {
@@ -365,14 +339,14 @@ namespace ColecticaSdkMvc.Controllers
             newmodel.WordList = model.WordList;
             newmodel.Name = model.Name;
             if (model.WordList != null) { newmodel = PopulateQuestionMessages(newmodel, nodes, type, i, j); }
-            newmodel.AllItems.SetValue(a => a.removed = false).ToList();
+            newmodel.AllItems = newmodel.AllItems.SetValue(a => a.removed = false).ToList();
             var removed = newmodel.AllItems.Where(a => a.removed == false).ToList();
 
             newmodel.FileName = fileName;
             newmodel.Type = type;
             newmodel.Datasets = model.Datasets;
             model.selectStudies = selectedItems;
-            TempData["EquivalenceModel"] = newmodel;
+            // TempData["EquivalenceModel"] = newmodel;
             return newmodel;
 
         }
@@ -394,40 +368,24 @@ namespace ColecticaSdkMvc.Controllers
         {
             // This displays all the Equivalences with more for one concept within a single equivalence. 
 
-            var test = model.AllResults.Where(a => a.concepts > 1).ToList();
-            List<TreeViewNode> selectedstudies = new List<TreeViewNode>();
-            if (selectedItems != null) { selectedstudies = (new JavaScriptSerializer()).Deserialize<List<TreeViewNode>>(selectedItems); }
-            EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
             EquivalenceModel equivalencemodel = new EquivalenceModel();
             switch (command)
             {
                
                 case "Previous":
-                    equivalencemodel = InitialiseModel(equivalencemodel, mymodel, selectedItems);
+                    equivalencemodel = InitialiseModel(equivalencemodel, selectedItems);
                     equivalencemodel.SelectedStudies = model.SelectedStudies;
                     equivalencemodel.AllItems = model.AllItems;
                     equivalencemodel.AllResults = model.AllResults;
-                    TempData["EquivalenceModel"] = equivalencemodel;
                     ViewBag.selectedItems = selectedItems;
                     ViewBag.originalItems = selectedItems;
-                    if (equivalencemodel.AllResults.Where(a => a.concepts > 1).Count() == 0)
-                    {
-                        return View("Concepts", model);
-                    }
-                    else
-                    {
-                        return View("Index", equivalencemodel);
-                    }
+                    return View("Index", equivalencemodel);
                 case "Next":
                     equivalencemodel.SelectedStudies = model.SelectedStudies;
                     equivalencemodel.AllItems = model.AllItems;
                     equivalencemodel.AllResults = model.AllResults;
                     equivalencemodel.Datasets = model.Datasets;
                     ViewBag.selectedItems = selectedItems;
-                    TempData["EquivalenceModel"] = model;
-                    var selected = model.AllResults.Where(a => a.selected == true).Count();
-                    var unselected = model.AllResults.Where(a => a.selected == false).Count();
-
                     return View("Display", equivalencemodel);
                 default:
                     return View(model);
@@ -440,19 +398,15 @@ namespace ColecticaSdkMvc.Controllers
         {
             // This displays all the Equivalences using the options selected using the Index page. 
 
-            List<TreeViewNode> selectedstudies = new List<TreeViewNode>();
-            if (selectedItems != null) { selectedstudies = (new JavaScriptSerializer()).Deserialize<List<TreeViewNode>>(selectedItems); }
-            EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
             EquivalenceModel equivalencemodel = new EquivalenceModel();
 
             switch (command)
             {               
                
                 case "Previous":
-                    equivalencemodel = InitialiseModel(equivalencemodel, mymodel, selectedItems);
+                    equivalencemodel = InitialiseModel(equivalencemodel, selectedItems);
                     equivalencemodel.SelectedStudies = model.SelectedStudies;
                     equivalencemodel.AllItems = model.AllItems;
-                    TempData["EquivalenceModel"] = equivalencemodel;
                     ViewBag.selectedItems = selectedItems;
                     ViewBag.originalItems = selectedItems;
                     return View("Index", equivalencemodel);
@@ -462,10 +416,6 @@ namespace ColecticaSdkMvc.Controllers
                     equivalencemodel.AllResults = model.AllResults;
                     equivalencemodel.Datasets = model.Datasets;
                     ViewBag.selectedItems = selectedItems;
-                    TempData["EquivalenceModel"] = model;
-                    var selected = model.AllResults.Where(a => a.selected == true).Count();
-                    var unselected = model.AllResults.Where(a => a.selected == false).Count();
-
                     return View("Variables", equivalencemodel);
                 default:
                     return View(model);
@@ -512,18 +462,14 @@ namespace ColecticaSdkMvc.Controllers
         public ActionResult Variables(EquivalenceModel model, string selectedItems, string studyName, string itemType, string command)
         {
             // This displays all the Equivalences in an amended layout and allows users to amend variable names and variable text of selected equivalences. 
-            
-            EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
+
             switch (command)
             {               
                 case "Previous":
-                    TempData["EquivalenceModel"] = model;
                     ViewBag.selectedItems = selectedItems;
-
                     List<EquivalenceItem> items = new List<EquivalenceItem>();
                     foreach (var result in model.AllResults)
                     {
-                        // result.selected = true;
                         items.Add(result);
 
                     }
@@ -531,19 +477,12 @@ namespace ColecticaSdkMvc.Controllers
                     ModelState.Clear();
                     return View("Display", model);
                case "Next":
-                    var waves = from r in model.AllResults
-                                group r by r.study into r1
-                                select new { Name = r1.Key };
-                
                     ExpectedModel expectedmodel = new ExpectedModel();
                     expectedmodel = GetExpectedItemsWaves(model.AllResults);
                     expectedmodel.AllItems = model.AllItems;
                     expectedmodel.AllResults = ProcessChanges(model.AllResults);
-                    expectedmodel.SelectedStudies = DeserializeStudies(model, selectedItems);
+                    expectedmodel.SelectedStudies = model.SelectedStudies;
                     expectedmodel.Datasets = model.Datasets;
-                    var selected = model.AllResults.Where(a => a.selected == true).Count();
-                    var unselected = model.AllResults.Where(a => a.selected == false).Count();
-
                     TempData["EquivalenceModel"] = model;
                     ViewBag.selectedItems = selectedItems;
                     return View("Waves", expectedmodel);              
@@ -594,7 +533,6 @@ namespace ColecticaSdkMvc.Controllers
         {
             // This displays all the Equivalences in an amended layout, based on the waves associated with each variable. 
 
-            EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
             ExpectedModel expectedmodel = new ExpectedModel();
             EquivalenceModel equivalencemodel = new EquivalenceModel();
 
@@ -606,19 +544,17 @@ namespace ColecticaSdkMvc.Controllers
                     equivalencemodel.AllResults = model.AllResults;
                     equivalencemodel.SelectedStudies = model.SelectedStudies;
                     equivalencemodel.Datasets = model.Datasets;
-                    TempData["EquivalenceModel"] = model;
                     ViewBag.selectedItems = selectedItems;
                     return View("Variables", equivalencemodel);
                 case "Next":
                     if (model.Datasets != null)
                     {
-                        model.AllResults.SetValue(a => a.removed = false).ToList();
+                        model.AllResults = model.AllResults.SetValue(a => a.removed = false).ToList();
                         expectedmodel = GetExpectedItemsDataset(model.AllResults, model.SelectedStudies, selectedItems, model.Datasets);
                         expectedmodel.AllItems = model.AllItems;
                         expectedmodel.AllResults = ProcessChanges(model.AllResults);
                         expectedmodel.Datasets = model.Datasets;
                         expectedmodel.SelectedStudies = model.SelectedStudies;
-                        TempData["EquivalenceModel"] = mymodel;
                         ViewBag.selectedItems = selectedItems;
                         ViewBag.originalItems = originalItems;
                         return View("Datasets", expectedmodel);
@@ -626,16 +562,14 @@ namespace ColecticaSdkMvc.Controllers
                     else
                     {
 
-                        equivalencemodel = InitialiseModel(equivalencemodel, mymodel, selectedItems);
+                        equivalencemodel = InitialiseModel(equivalencemodel, selectedItems);
                         equivalencemodel.SelectedStudies = model.SelectedStudies;
                         equivalencemodel.AllItems = model.AllItems;
                         equivalencemodel.Datasets = model.Datasets;
                         equivalencemodel.SelectedMethods = new List<string>();
-                        TempData["EquivalenceModel"] = equivalencemodel;
                         ViewBag.selectedItems = selectedItems;
                         ViewBag.originalItems = selectedItems;
                         ViewBag.Datasets = SerializeDatasets(model.Datasets);
-
                         return View("Index", equivalencemodel);
                     }
                 default:
@@ -733,7 +667,6 @@ namespace ColecticaSdkMvc.Controllers
         {
             // This displays all the Equivalences in an amended layout, based on the datasets associated with each variable. 
 
-            EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
             ExpectedModel expectedmodel = new ExpectedModel();
             EquivalenceModel equivalencemodel = new EquivalenceModel();
 
@@ -741,7 +674,7 @@ namespace ColecticaSdkMvc.Controllers
             {
                 case "Previous":
                     ViewBag.selectedItems = selectedItems;
-                    model.AllResults.SetValue(a => a.removed = false).ToList();
+                    model.AllResults = model.AllResults.SetValue(a => a.removed = false).ToList();
                     expectedmodel = GetExpectedItemsWaves(model.AllResults);
                     expectedmodel.AllItems = model.AllItems;
                     expectedmodel.AllResults = model.AllResults;
@@ -750,15 +683,14 @@ namespace ColecticaSdkMvc.Controllers
                     ViewBag.selectedItems = selectedItems;
                     return View("Waves", expectedmodel);
                 case "Next":  
-                    equivalencemodel = InitialiseModel(equivalencemodel, mymodel, selectedItems);
+                    equivalencemodel = InitialiseModel(equivalencemodel, selectedItems);
                     equivalencemodel.SelectedStudies = model.SelectedStudies;
                     equivalencemodel.AllItems = model.AllItems;
+                    equivalencemodel.AllResults = model.AllResults;
                     equivalencemodel.Datasets = model.Datasets;
-                    TempData["EquivalenceModel"] = equivalencemodel;
                     ViewBag.selectedItems = selectedItems;
                     ViewBag.originalItems = selectedItems;
                     ViewBag.Datasets = SerializeDatasets(model.Datasets);
-
                     return View("Index", equivalencemodel);
                 default:
                     return View(model);
