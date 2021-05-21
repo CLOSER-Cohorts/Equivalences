@@ -335,7 +335,6 @@ namespace ColecticaSdkMvc.Utility
 
         public static List<StudyItem> BuildSweepsTree(List<StudyItem> model, SearchResponse allsweeps, string study, string agency, List<TreeViewNode> nodes, string parent)
         {
-            // move
             int i = 1;
             foreach (var sweep in allsweeps.Results)
             {
@@ -355,6 +354,28 @@ namespace ColecticaSdkMvc.Utility
             return model;
         }
 
+        public static List<RepositoryItemMetadata> GetAllRepositoryQuestions(string agency, Guid id, WcfRepositoryClient client)
+        {
+            // Retrieves data for the selected study from the repository to be used in determining equivalences
+
+            List<RepositoryItemMetadata> infoList = new List<RepositoryItemMetadata>();
+            MultilingualString.CurrentCulture = "en-GB";
+
+            IVersionable item = client.GetLatestItem(id, agency,
+                 ChildReferenceProcessing.Populate);
+
+            var studyUnit = item as StudyUnit;
+
+            SetSearchFacet setFacet = new SetSearchFacet();
+            setFacet.ItemTypes.Add(DdiItemType.QuestionItem);
+
+            if (studyUnit == null) return infoList;
+            var matches = client.SearchTypedSet(studyUnit.CompositeId,
+                setFacet);
+            infoList = client.GetRepositoryItemDescriptions(matches.ToIdentifierCollection()).ToList();
+            return infoList;
+
+        }
         public static List<SelectListItem> LoadStudies(QuestionModel model, SearchResponse response)
         {
             // move

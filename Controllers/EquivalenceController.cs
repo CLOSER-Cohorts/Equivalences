@@ -147,7 +147,6 @@ namespace ColecticaSdkMvc.Controllers
                         return View(model);
 
                     }
-                    break;
                 case "Equivalent Questions":
                     model.EquivalenceError = GetErrors(model, selectedItems);
                     if (model.EquivalenceError != null)
@@ -233,36 +232,7 @@ namespace ColecticaSdkMvc.Controllers
                     ViewBag.Json = (new JavaScriptSerializer()).Serialize(nodes);
                     return View(model);
             }
-
-            DateTime dateTime1 = DateTime.Now;
-            ResetMatchesModelStepOne stepOneModel = new ResetMatchesModelStepOne();
-            model.Results = new List<StudyItem>();
-
-            model = EquivalenceHelper.GetStudies(model, null);
-            model.SelectedStudies = new List<string>();
-            if (wordselection != null)
-            {
-                if (wordselection.Length != 0) model.WordList = EquivalenceHelper.GetList(wordselection);
-                if (wordselection.Length == 0) model.WordList = new List<Word>();
-            }
-            else
-            {
-                model.WordList = new List<Word>();
-            }
-            if (selectedItems == "")
-            {
-                return View(model);
-            }
-
-           
           
-            model = EquivalenceHelper.GetStudies(model, null);
-
-            DateTime dateTime2 = DateTime.Now;
-            var diff = dateTime2.Subtract(dateTime1);
-            var res = String.Format("{0}:{1}:{2}", diff.Hours, diff.Minutes, diff.Seconds);
-            stepOneModel.Duration = res.ToString();
-            return View(model);
         }
 
         public List<string> DeserializeStudies(EquivalenceModel model, string selectedItems)
@@ -281,7 +251,13 @@ namespace ColecticaSdkMvc.Controllers
         public List<Study> DeserializeDatasets(string selectedDatasets)
         {
             List<Study> studies = new List<Study>();
-            if (selectedDatasets != "") { if (selectedDatasets != null) studies = (new JavaScriptSerializer()).Deserialize<List<Study>>(selectedDatasets); }        
+            if (selectedDatasets != "")
+            {
+                if (selectedDatasets != null)
+                {
+                    studies = (new JavaScriptSerializer()).Deserialize<List<Study>>(selectedDatasets);
+                }
+            }        
             return studies;
         }
 
@@ -323,7 +299,7 @@ namespace ColecticaSdkMvc.Controllers
             if (model == null) { model.AllItems = new List<EquivalenceItem>(); } 
             model = LoadSelectedStudies(model, selectedstudies);
             var result = CompareStudyLists(originalItems, selectedItems);
-            if (result == false)
+            if (!result)
             {
                 model.Datasets = new List<Study>();
                 model.AllItems = new List<EquivalenceItem>();
@@ -340,13 +316,10 @@ namespace ColecticaSdkMvc.Controllers
             newmodel.Name = model.Name;
             if (model.WordList != null) { newmodel = PopulateQuestionMessages(newmodel, nodes, type, i, j); }
             newmodel.AllItems = newmodel.AllItems.SetValue(a => a.removed = false).ToList();
-            var removed = newmodel.AllItems.Where(a => a.removed == false).ToList();
-
             newmodel.FileName = fileName;
             newmodel.Type = type;
             newmodel.Datasets = model.Datasets;
             model.selectStudies = selectedItems;
-            // TempData["EquivalenceModel"] = newmodel;
             return newmodel;
 
         }
@@ -427,7 +400,7 @@ namespace ColecticaSdkMvc.Controllers
             List<EquivalenceItem> items = new List<EquivalenceItem>();
             foreach (var result in results)
             {
-                if (result.selected == true)
+                if (result.selected)
                 {
                     EquivalenceItem item = new EquivalenceItem();
                     item.uniqueId = result.uniqueId;
@@ -579,16 +552,15 @@ namespace ColecticaSdkMvc.Controllers
 
         public ExpectedModel GetExpectedItemsWaves(List<EquivalenceItem> results)
         {
-            results = results.Where(a => a.selected == true).ToList();
-            var selected = results.Where(a => a.selected == true).Count();
+            results = results.Where(a => a.selected).ToList();
             ExpectedModel model = new ExpectedModel();
-            model.AllResults = results.OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
+            model.AllResults = results.OrderBy(a => a.column).ThenBy(a => a.uniqueId).ToList();
             string currentdescription = null, currentname = null;
-            results.SetValue(a => a.selected = true).ToList();
+            results = results.SetValue(a => a.selected = true).ToList();
 
             List<ExpectedItem> expecteditems = new List<ExpectedItem>();
             var equivalences = from r in results
-                               where r.selected == true
+                               where r.selected
                                group r by r.uniqueId into r1
                                select new { Name = r1.Key };
             equivalences = equivalences.ToList();
@@ -596,13 +568,13 @@ namespace ColecticaSdkMvc.Controllers
             foreach (var equivalence in equivalences)
             {
                 var topics = (from r in results
-                              where r.selected == true
+                              where r.selected
                               where r.uniqueId == equivalence.Name
                               group r by r.concept into r1
                               select new { Name = r1.Key }).ToList();
                 foreach (var topic in topics)
                 {
-                    var questions = results.Where(a => a.uniqueId == equivalence.Name).Where(a => a.concept == topic.Name.ToString()).Where(a => a.selected == true).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
+                    var questions = results.Where(a => a.uniqueId == equivalence.Name).Where(a => a.concept == topic.Name.ToString()).Where(a => a.selected).OrderBy(a => a.column).ThenBy(a => a.uniqueId).ToList();
                     while (questions.Count != 0)
                     {
                         var waves = GetAllStudies(results);
@@ -613,7 +585,7 @@ namespace ColecticaSdkMvc.Controllers
 
                             var question = (from q in questions
                                             where q.studyGroup == wave.StudyName
-                                            where q.selected == true
+                                            where q.selected
                                             select q).FirstOrDefault();
                             if (question != null)
                             {
@@ -626,13 +598,13 @@ namespace ColecticaSdkMvc.Controllers
                                 expecteditem.Name = currentname;
                                 expecteditem.Description = currentdescription;
                                 expecteditem.Topic = question.concept;
-                                questions.Where(a => a.variableItem == question.variableItem).SetValue(a => a.removed = true).ToList();
-                                waves.Where(a => a.StudyName == wave.StudyName).SetValue(a => a.Value = question.variableName).ToList();
+                                questions.Where(a => a.variableItem == question.variableItem).SetValue(a => a.removed = true);
+                                waves = waves.Where(a => a.StudyName == wave.StudyName).SetValue(a => a.Value = question.variableName).ToList();
                             }
                         }
                         expecteditem.Waves = waves;
                         expecteditems.Add(expecteditem);
-                        questions = questions.Where(a => a.removed == false).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
+                        questions = questions.Where(a => !a.removed).OrderBy(a => a.column).ThenBy(a => a.uniqueId).ToList();
                     }
                 }
             }
@@ -702,8 +674,7 @@ namespace ColecticaSdkMvc.Controllers
         public ExpectedModel GetExpectedItemsDataset(List<EquivalenceItem> results, List<string> selectedstudies, string selecteditems, List<Study> waves)
         {
             ExpectedModel model = new ExpectedModel();
-            results = results.Where(a => a.selected == true).OrderBy(a => a.column).OrderBy(a => a.uniqueId).OrderBy(a => a.dataset).ToList();
-            var results1 = results.Where(a => a.uniqueId == 3).ToList();
+            results = results.Where(a => a.selected).OrderBy(a => a.column).ThenBy(a => a.uniqueId).ThenBy(a => a.dataset).ToList();
             List<ExpectedItem> expecteditems = new List<ExpectedItem>();
             var equivalences = from r in results
                                group r by r.uniqueId into r1
@@ -716,12 +687,12 @@ namespace ColecticaSdkMvc.Controllers
               
                 ExpectedItem expecteditem = new ExpectedItem();
                 List<Study> datasets = new List<Study>();
-
+                StringBuilder dataset_string = new StringBuilder();
 
                 foreach (var wave in waves)
                 {
 
-                    var questions = results.Where(a => a.uniqueId == equivalence.Name).Where(a => a.dataset == wave.StudyName).Where(a => a.removed == false).OrderBy(a => a.column).OrderBy(a => a.uniqueId).ToList();
+                    var questions = results.Where(a => a.uniqueId == equivalence.Name).Where(a => a.dataset == wave.StudyName).Where(a => !a.removed).OrderBy(a => a.column).ThenBy(a => a.uniqueId).ToList();
                     if (questions.Count != 0)
                     {
                         expecteditem.UniqueId = questions.FirstOrDefault().uniqueId;
@@ -734,8 +705,9 @@ namespace ColecticaSdkMvc.Controllers
                         {
                             dataset.ID = equivalence.Name;
                             dataset.StudyName = question.dataset;
-                            dataset.Value = dataset.Value + question.variableName + ";";
+                            dataset_string = dataset_string.Append(question.variableName + ";");
                         }
+                        dataset.Value = dataset_string.ToString();
                         datasets.Add(dataset);
                     }
                     else
@@ -767,7 +739,6 @@ namespace ColecticaSdkMvc.Controllers
             facet.SearchLatestVersion = true;
             var client = ClientHelper.GetClient();
             SearchResponse datasets = client.Search(facet);
-            List<SearchResult> datasets1 = new List<SearchResult>();
             List<TreeViewNode> selectedStudies = new List<TreeViewNode>();
             selectedStudies = (new JavaScriptSerializer()).Deserialize<List<TreeViewNode>>(selecteditems);
 
@@ -777,7 +748,7 @@ namespace ColecticaSdkMvc.Controllers
 
             foreach (var selecteditem in selectedStudies)
             {
-                datasets1 = datasets.Results.Where(x => x.AgencyId.Contains(selecteditem.parent) == true).OrderBy(x => x.DisplayLabel).ToList(); 
+                List<SearchResult> datasets1 = datasets.Results.Where(x => x.AgencyId.Contains(selecteditem.parent)).OrderBy(x => x.DisplayLabel).ToList(); 
                 int j = 1;
                 foreach (var dataset in datasets1)
                 {
@@ -806,7 +777,6 @@ namespace ColecticaSdkMvc.Controllers
 
             int i = 1;
             model.Datasets = new List<Study>();
-            List<EquivalenceItem> items = new List<EquivalenceItem>();
 
             foreach (var study in model.SelectedStudies)
             {
@@ -821,12 +791,11 @@ namespace ColecticaSdkMvc.Controllers
                     j++;
                 }
                 var identifier = new Guid(id);
-                var references = Helper.GetReferences(agency, identifier);
                 model = GetAllRepositoryItems(model, agency, identifier, group, new Guid(id), i);
                 i++;
 
             }
-            model.Datasets = model.Datasets.OrderBy(x => x.StudyName).OrderBy(x => x.ID).ToList();
+            model.Datasets = model.Datasets.OrderBy(x => x.StudyName).ThenBy(x => x.ID).ToList();
             return model;
         }
 
@@ -854,7 +823,6 @@ namespace ColecticaSdkMvc.Controllers
                 var v = RepositoryHelper.GetConcept(result.AgencyId, result.Identifier);
                 RepositoryItemMetadata mainconcept = new RepositoryItemMetadata();
                 if (concept != null) { mainconcept = RepositoryHelper.GetConcept(concept.AgencyId, concept.Identifier); }
-                var dataset = RepositoryHelper.GetConcept(variable.AgencyId, variable.Identifier);
                 if (concept != null) item.concept = concept.Label.Values.FirstOrDefault() + " - " + mainconcept.Label.Values.FirstOrDefault();
                 item.description = variable.Label.Values.FirstOrDefault();
                 item.questionText = item.description;
@@ -875,11 +843,7 @@ namespace ColecticaSdkMvc.Controllers
         {
             List<EquivalenceItem> equivalenceitems = new List<EquivalenceItem>();    
             if (model.AllResults == null) { model.AllResults = new List<EquivalenceItem>(); }
-            List<Word> words1 = new List<Word>();
-
-            var client = ClientHelper.GetClient();
             var waves = GetAllStudies(model.AllItems);
-            List<EquivalenceItem> items = new List<EquivalenceItem>();
             foreach (var selectedwords in model.WordList)
             {
 
@@ -978,7 +942,7 @@ namespace ColecticaSdkMvc.Controllers
                     }
                 }
             }
-            model.AllResults = model.AllResults.OrderBy(x => x.dataset).OrderBy(x => x.uniqueId).ToList();
+            model.AllResults = model.AllResults.OrderBy(x => x.dataset).ThenBy(x => x.uniqueId).ToList();
             return model;
         }
 
@@ -1058,33 +1022,18 @@ namespace ColecticaSdkMvc.Controllers
 
         public static EquivalenceModel GetAllRepositoryItems(EquivalenceModel model, string agency, Guid id, string group, Guid studyitem, int study)
         {
-            // Retrieves data for the selected study from the repository to be used in determining equivalences
-
-            MultilingualString.CurrentCulture = "en-GB";
-
             var client = ClientHelper.GetClient();
 
-            IVersionable item = client.GetLatestItem(id, agency,
-                 ChildReferenceProcessing.Populate);
-
-            var studyUnit = item as StudyUnit;
-
-            SetSearchFacet setFacet = new SetSearchFacet();
-            setFacet.ItemTypes.Add(DdiItemType.QuestionItem);
-
-            if (studyUnit == null) return model;
-            var matches = client.SearchTypedSet(studyUnit.CompositeId,
-                setFacet);
-            var infoList = client.GetRepositoryItemDescriptions(matches.ToIdentifierCollection()).ToList();
+            var infoList = RepositoryHelper.GetAllRepositoryQuestions(agency, id, client);
             foreach (var info in infoList)
             {
 
                 var children = Helper.GetReferences(info.AgencyId, info.Identifier).ToList();
                 var variables = children.Where(x => x.ItemType == new Guid("683889c6-f74b-4d5e-92ed-908c0a42bb2d")).ToList();
-                var concept = children.Where(x => x.ItemType == new Guid("5cc915a1-23c9-4487-9613-779c62f8c205")).FirstOrDefault();
+                RepositoryItemMetadata concept = children.Where(x => x.ItemType == new Guid("5cc915a1-23c9-4487-9613-779c62f8c205")).FirstOrDefault();
                 foreach (var variable in variables)
                 {
-                    if (variable.IsDeprecated == false)
+                    if (!variable.IsDeprecated)
                     {
                         var latestvariable = from r in variables
                                              where r.Identifier == variable.Identifier
@@ -1110,14 +1059,17 @@ namespace ColecticaSdkMvc.Controllers
                             if (info.Summary.FirstOrDefault().Value != null) equivalenceitem.questionOrdered = GetOrderedText(info.Summary.FirstOrDefault().Value);
                             equivalenceitem.questionItem = info.CompositeId.ToString();
                             equivalenceitem.questionIdentifier = info.Identifier;
-                            equivalenceitem.questionconceptitem = concept.CompositeId.ToString();                           
+                            equivalenceitem.questionconceptitem = concept.CompositeId.ToString();
                             equivalenceitem.studyGroup = group;
                             equivalenceitem.set = study;
-                            if (concept != null) equivalenceitem.concept = concept.Label.Values.FirstOrDefault();
+                            if (concept != null)
+                            {
+                                equivalenceitem.concept = concept.Label.Values.FirstOrDefault();
+                            }
+
                             if (study == 1) { model.MasterItems.Add(equivalenceitem); }
 
                             var references = Helper.GetReferences(variable.AgencyId, variable.Identifier).Where(x => x.ItemType == new Guid("3b438f9f-e039-4eac-a06d-3fa1aedf48bb")).ToList();
-                            var references1 = Helper.GetReferences(variable.AgencyId, variable.Identifier).ToList();
                             if (references.Count != 0)
                             {
                                 var dataset = Helper.GetReferences(references.FirstOrDefault().AgencyId, references.FirstOrDefault().Identifier).OrderBy(x => x.Version).LastOrDefault();
@@ -1129,7 +1081,7 @@ namespace ColecticaSdkMvc.Controllers
                                 equivalenceitem.dataset = "No Dataset";
                             }
                             model.AllItems.Add(equivalenceitem);
-                         
+
                         }
                     }
 
@@ -1140,7 +1092,6 @@ namespace ColecticaSdkMvc.Controllers
                         group r by r.dataset into r1
                         select new { Name = r1.Key };
             waves = waves.OrderBy(x => x.Name).ToList();
-            List<Study> datasets = new List<Study>();
 
             int k = 1;
             foreach (var wave in waves)
@@ -1160,6 +1111,8 @@ namespace ColecticaSdkMvc.Controllers
             return model;
         }
 
+       
+
         private static string GetCurrentDataSet(string input)
         {
             int spos = input.IndexOf("<r:AlternateTitle>");
@@ -1178,6 +1131,7 @@ namespace ColecticaSdkMvc.Controllers
         {
             // Creates an ordered list of all words greater than three characters to be used when the match all words option is selected on the Index screen
 
+            StringBuilder orderedstringlist = new StringBuilder();
             string ordered = "";
             GFG gg = new GFG();
             List<string> words = sentance.Split(' ').ToList();           
@@ -1185,9 +1139,9 @@ namespace ColecticaSdkMvc.Controllers
 
             foreach (var word in words)
             {
-                if (word.Length > 3) ordered = ordered + word + " ";
+                if (word.Length > 3) orderedstringlist = orderedstringlist.Append(word + " ");
             }
-           
+            ordered = orderedstringlist.ToString();
             
             return ordered;
         }      
@@ -1197,8 +1151,8 @@ namespace ColecticaSdkMvc.Controllers
             // Creates a selectlist of all the methods to be used for Equivalences
 
             List<SelectListItem> methods = new List<SelectListItem>();
-            methods.Add(new SelectListItem() { Text = "Match Text", Value = "0" });
-            methods.Add(new SelectListItem() { Text = "Match All Words", Value = "1" });
+            methods.Add(new SelectListItem() { Text = "Match same Question or Variable", Value = "0" });
+            methods.Add(new SelectListItem() { Text = "Match Words greater then 3 characters", Value = "1" });
             return methods;
         }
 
@@ -1212,11 +1166,11 @@ namespace ColecticaSdkMvc.Controllers
 
                     switch (method)
                     {
-                        case "Match Text":
-                            allresults = GenerateEquivalences(items, master, type, "text",i,j);
+                        case "Match same Question or Variable":
+                            allresults = GenerateEquivalences(items, type, "text",i,j);
                             break;
-                        case "Match All Words":
-                            allresults = GenerateEquivalences(items, master,type, "words",i, j);
+                        case "Match Words greater then 3 characters":
+                            allresults = GenerateEquivalences(items, type, "words",i, j);
                             break;
                     }
                 }
@@ -1225,10 +1179,10 @@ namespace ColecticaSdkMvc.Controllers
            
         }
 
-        private List<EquivalenceItem> GenerateEquivalences(List<EquivalenceItem> items, List<EquivalenceItem> master, string type, string method, int i, int j)
+        private List<EquivalenceItem> GenerateEquivalences(List<EquivalenceItem> items, string type, string method, int i, int j)
         {
             var waves = GetAllStudies(items);
-            List<EquivalenceItem> allresults = new List<EquivalenceItem>();             
+            List<EquivalenceItem> allresults = new List<EquivalenceItem>();
             var item3 = items.Where(x => x.set == 1).OrderBy(x => x.questionText).ToList();
             List<EquivalenceItem> equivalences = new List<EquivalenceItem>();
             foreach (var record1 in item3)
@@ -1239,10 +1193,10 @@ namespace ColecticaSdkMvc.Controllers
                         switch (type)
                         {
                             case "Variable":
-                                equivalences = items.Where(u => u.removed != true).Where(u => u.variableText.Equals(record1.variableText)).ToList();
+                                equivalences = items.Where(u => !u.removed).Where(u => u.variableText.Equals(record1.variableText)).ToList();
                                 break;
                             case "Question":
-                                equivalences = items.Where(u => u.removed != true).Where(u => u.questionText.Equals(record1.questionText)).ToList();
+                                equivalences = items.Where(u => !u.removed).Where(u => u.questionText.Equals(record1.questionText)).ToList();
                                 break;
 
                         }
@@ -1251,16 +1205,16 @@ namespace ColecticaSdkMvc.Controllers
                         switch (type)
                         {
                             case "Variable":
-                                equivalences = items.Where(u => u.removed != true).Where(u => u.variableOrdered.Equals(record1.variableOrdered)).ToList();
+                                equivalences = items.Where(u => !u.removed).Where(u => u.variableOrdered.Equals(record1.variableOrdered)).ToList();
                                 break;
                             case "Question":
-                                equivalences = items.Where(u => u.removed != true).Where(u => u.questionOrdered.Equals(record1.questionOrdered)).ToList();
+                                equivalences = items.Where(u => !u.removed).Where(u => u.questionOrdered.Equals(record1.questionOrdered)).ToList();
                                 break;
 
                         }
                         break;
                 }
-                        
+
                 if (equivalences.Count > 1)
                 {
                     i++;
@@ -1269,26 +1223,24 @@ namespace ColecticaSdkMvc.Controllers
                         j++;
                         EquivalenceItem item = new EquivalenceItem();
                         item = equivalence;
-                        item.counter = j;                        
+                        item.counter = j;
                         item.uniqueId = i;
                         switch (method)
                         {
                             case "text":
-                                item.equivalence = "Same Text " + item.uniqueId;
+                                item.equivalence = "Match same Question or Variable" + item.uniqueId;
                                 break;
                             case "words":
-                                item.equivalence = "Same Words " + item.uniqueId;
+                                item.equivalence = "Match Words greater then 3 characters" + item.uniqueId;
                                 break;
                         }
                         item.selected = true;
                         item.column = waves.Where(a => a.StudyName == equivalence.studyGroup).Select(a => { return a.ID; }).FirstOrDefault();
                         allresults.Add(item);
-                        items.Where(a => a.variableItem == equivalence.variableItem).SetValue(a => a.removed = true).ToList();
-                        var removed2 = items.Where(a => a.removed == true).ToList().Count;
-                    }                   
+                        items.Where(a => a.variableItem == equivalence.variableItem).SetValue(a => a.removed = true);
+                    }
                 }
             }
-            var removed = items.Where(a => a.removed == true).ToList();
             return allresults;
         }
 
@@ -1311,22 +1263,16 @@ namespace ColecticaSdkMvc.Controllers
             }
 
             var client = ClientHelper.GetClient();
-            List<string[]> oCsvList = new List<string[]>();
+            //List<string[]> oCsvList = new List<string[]>();
 
             string[] sFileLines = sFileContents.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             int i = 0;
             foreach (string sFileLine in sFileLines)
             {
-                string[] oCsvItem = new string[11];
-
-                oCsvItem = sFileLine.Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                var oCsvItem = sFileLine.Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 if (i != 0)
                 {
                     EquivalenceItem equivalence = new EquivalenceItem();
-                    var id = oCsvItem[4].Substring(oCsvItem[4].IndexOf(":") + 1);
-                    id = id.Substring(0, id.IndexOf(":"));
-                    var selecteditems = oCsvItem[4].Split(':').ToList();
-
                     equivalence.equivalence = oCsvItem[1];
                     equivalence.questionName = oCsvItem[2];
                     equivalence.questionText = oCsvItem[3];
@@ -1347,7 +1293,7 @@ namespace ColecticaSdkMvc.Controllers
                 }
                 i++;
             }
-            equivalences.SetValue(a => a.selected = true).ToList();
+            equivalences = equivalences.SetValue(a => a.selected = true).ToList();
             newequivalences = DetectMultipleEquivalences(equivalences);
           
 
@@ -1358,8 +1304,6 @@ namespace ColecticaSdkMvc.Controllers
                         group r by r.dataset into r1
                         select new { Name = r1.Key };
             waves = waves.OrderBy(x => x.Name).ToList();
-            List<Study> datasets = new List<Study>();
-
             int k = 1;
             foreach (var wave in waves)
             {
@@ -1380,7 +1324,6 @@ namespace ColecticaSdkMvc.Controllers
 
         public List<EquivalenceItem> DetectMultipleEquivalences(List<EquivalenceItem> equivalences)
         {
-            var client = ClientHelper.GetClient();
             List<EquivalenceItem> newequivalences = new List<EquivalenceItem>();
             int counter = 1;
 
@@ -1423,7 +1366,6 @@ namespace ColecticaSdkMvc.Controllers
                     newequivalence.conceptitems = conceptitems;
                 }
                 counter = equivalence.uniqueId;
-                List<string> selecteditems = newequivalence.questionconceptitem.Split(':').ToList();
                 newequivalences.Add(newequivalence);
 
             }
@@ -1433,29 +1375,29 @@ namespace ColecticaSdkMvc.Controllers
         [HttpPost]
         public ContentResult ChangeTheValue(EquivalenceModel model)
         {
+            StringBuilder output = new StringBuilder();
+
             string OutputCSV = null;
             var m = new EquivalenceModel();
             m.AllItems = model.AllItems;
             m.AllResults = model.AllResults.Where(a => a.concepts > 1).ToList();
             m.Datasets = model.Datasets;
             var allresults = model.AllResults.Where(a => a.concepts > 1).Where(a => a.selectedconcept != null).ToList();
-            OutputCSV = "Question Item URN, Question Group URN, New Topic, Related Variables\n";
+            output = output.Append("Question Item URN, Question Group URN, New Topic, Related Variables\n");
             foreach (var allresult in allresults)
             {
-                OutputCSV = OutputCSV + allresult.questionItem + ", " + allresult.questionconceptitem + ", " + allresult.selectedconcept + ", ";
+                output = output.Append(allresult.questionItem + ", " + allresult.questionconceptitem + ", " + allresult.selectedconcept + ", ");
                 var test = model.AllItems.Where(a => a.concept == allresult.concept).ToList();
 
                 var relatedvariables = model.AllResults.Where(a => a.questionItem == allresult.questionItem).ToList();
                 foreach (var relatedvariable in relatedvariables)
                 {
-                    OutputCSV = OutputCSV + relatedvariable.variableItem + ";";
+                    output = output.Append(relatedvariable.variableItem + ";");
                 }
-                OutputCSV = OutputCSV + "\n";
+                output = output.Append("\n");
 
             }
-            var m2 = m.AllResults.Where(a => a.selectedconcept != null).ToList();
-            var serializer = new JavaScriptSerializer();
-            var viewModel = new EquivalenceModel();
+            OutputCSV = output.ToString();
             return Content(OutputCSV);
 
         }
@@ -1463,22 +1405,22 @@ namespace ColecticaSdkMvc.Controllers
         [HttpPost]
         public ContentResult DisplayCsv(EquivalenceModel model)
         {
+            StringBuilder output = new StringBuilder();
             string OutputCSV = null;
             var m = new EquivalenceModel();
             m.AllItems = model.AllItems;
             m.Datasets = model.Datasets;
-            var allresults = model.AllResults.Where(a => a.concepts > 1).Where(a => a.selectedconcept != null).ToList();
             OutputCSV = "ID, Search Term, Question Name, Question Text, Question Item, QuestionConceptItem, Variable Name, Variable Text, Variable Item, Agency, Study, Concept, Dataset\n";
             foreach (var allresult in model.AllResults)
             {
                 if (allresult.dataset == null) { allresult.dataset = "No Dataset"; }
-                OutputCSV = OutputCSV + allresult.uniqueId + ", " + allresult.equivalence + ", " + allresult.questionName + ", " + allresult.questionText.Replace(",",".") + ", " + allresult.questionItem + ", " +
+                output = output.Append(allresult.uniqueId + ", " + allresult.equivalence + ", " + allresult.questionName + ", " + allresult.questionText.Replace(",",".") + ", " + allresult.questionItem + ", " +
                     allresult.questionconceptitem + ", " + allresult.variableName + ", " + allresult.variableText.Replace(",",".") + ", " + allresult.variableItem + ", "+ allresult.study + "," + allresult.studyGroup + "," + allresult.concept + "," +
-                    allresult.dataset;
-                OutputCSV = OutputCSV + "\n";
+                    allresult.dataset);
+                output = output.Append("\n");
 
             }
-           
+            OutputCSV = OutputCSV + output.ToString();
             JavaScriptSerializer serializer = new JavaScriptSerializer();
             var outputcsv = serializer.Serialize(OutputCSV); 
             return Content(outputcsv);

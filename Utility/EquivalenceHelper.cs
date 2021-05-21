@@ -50,7 +50,6 @@ namespace ColecticaSdkMvc.Utility
 
         public static List<StudyItem> BuildSweepsTree(List<StudyItem> model, List<string> selecteditems, SearchResponse allsweeps, string study, string agency, List<TreeViewNode> nodes, string parent)
         {
-            // move
             int i = 1;
             bool found = false;
             foreach (var sweep in allsweeps.Results)
