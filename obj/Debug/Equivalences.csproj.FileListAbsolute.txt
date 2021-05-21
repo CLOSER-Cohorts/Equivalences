@@ -1,5 +1,3 @@
-D:\Equivalences\Equivalences\obj\Debug\Equivalences.csprojAssemblyReference.cache
-D:\Equivalences\Equivalences\obj\Debug\Equivalences.csproj.CoreCompileInputs.cache
 D:\Equivalences\Equivalences\bin\Equivalences.dll.config
 D:\Equivalences\Equivalences\bin\Equivalences.dll
 D:\Equivalences\Equivalences\bin\Equivalences.pdb
@@ -91,6 +89,8 @@ D:\Equivalences\Equivalences\bin\System.Web.WebPages.Deployment.xml
 D:\Equivalences\Equivalences\bin\System.Web.WebPages.Razor.xml
 D:\Equivalences\Equivalences\bin\Antlr3.Runtime.pdb
 D:\Equivalences\Equivalences\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
+D:\Equivalences\Equivalences\obj\Debug\Equivalences.csproj.CoreCompileInputs.cache
 D:\Equivalences\Equivalences\obj\Debug\Equivalences.csproj.CopyComplete
 D:\Equivalences\Equivalences\obj\Debug\Equivalences.dll
 D:\Equivalences\Equivalences\obj\Debug\Equivalences.pdb
+D:\Equivalences\Equivalences\obj\Debug\Equivalences.csprojAssemblyReference.cache

@@ -15,10 +15,10 @@
 
 <script type="text/javascript">
 
-     //create a user-defined function to download CSV file
+    //create a user-defined function to download CSV file
     function download_csv_file(data) {
         var csvdata = "";
-        
+
         csvdata = "Search Term, Description, Topic,";
         var result = JSON.stringify(data).trim();
         result = result.replace('"[', '').replace(']"', '').trim();
@@ -122,7 +122,7 @@
         {
             for (int i = 0; i < Model.SelectedStudies.Count(); i++)
             {
-            @Html.TextBoxFor(modelItem => Model.SelectedStudies[i], new { style = "width:98%", @type = "hidden" })
+                @Html.TextBoxFor(modelItem => Model.SelectedStudies[i], new { style = "width:98%", @type = "hidden" })
             }
 
         }
@@ -163,6 +163,7 @@
             @Html.TextBoxFor(modelItem => Model.AllItems[i].study, new { style = "width:98%", @type = "hidden" })
             @Html.TextBoxFor(modelItem => Model.AllItems[i].dataset, new { style = "width:98%", @type = "hidden" })
             @Html.TextBoxFor(modelItem => Model.AllItems[i].concept, new { style = "width:98%", @type = "hidden" })
+            @Html.TextBoxFor(modelItem => Model.AllItems[i].questionconceptitem, new { style = "width:98%", @type = "hidden" })
             @Html.TextBoxFor(modelItem => Model.AllItems[i].column, new { style = "width:98%", @type = "hidden" })
             @Html.TextBoxFor(modelItem => Model.AllItems[i].set, new { style = "width:98%", @type = "hidden" })
             @Html.TextBoxFor(modelItem => Model.AllItems[i].questionOrdered, new { style = "width:98%", @type = "hidden" })
@@ -192,6 +193,9 @@
             @Html.TextBoxFor(modelItem => Model.AllResults[i].dataset, new { style = "width:98%", @type = "hidden" })
             @Html.TextBoxFor(modelItem => Model.AllResults[i].concept, new { style = "width:98%", @type = "hidden" })
             @Html.TextBoxFor(modelItem => Model.AllResults[i].column, new { style = "width:98%", @type = "hidden" })
+            @Html.TextBoxFor(modelItem => Model.AllResults[i].questionconceptitem, new { style = "width:98%", @type = "hidden" })
+            @Html.TextBoxFor(modelItem => Model.AllResults[i].concepts, new { style = "width:98%", @type = "hidden" })
+            @Html.TextBoxFor(modelItem => Model.AllResults[i].conceptitems, new { style = "width:98%", @type = "hidden" })
             @Html.TextBoxFor(modelItem => Model.AllResults[i].selected, new { style = "width:98%", @type = "hidden" })
 
         }
@@ -267,31 +271,31 @@
                             }
                             @Html.Raw("</tr></thead><tbody>")
                         }
-                            <tr>
-                                <td valign="top" style="width:40px; margin-top:0">
-                                    @if (currentCounter == 1)
-                                    {@item.UniqueId}
-                                </td>
-                                <td valign="top" style="width:100px; margin-top:0">
-                                    @if (currentCounter == 1)
-                                    {@item.Equivalence}
-                                </td>
-                                <td valign="top" style="width:250px; margin-top:0">
-                                    @if (currentCounter == 1)
-                                    {@item.Name}
-                                </td>
-                                <td valign="top" style="width:600px; margin-top:0">
-                                    @if (currentCounter == 1)
-                                    {@item.Description}
-                                </td>
-                                <td valign="top" align="left" style="width:250px; margin-top:0">
-                                    @item.Topic
-                                </td>
-                                @foreach (var wave in @item.Waves)
-                                {
-                                    <td valign="top" style="overflow:hidden;width:250px; word-break:break-all; margin-top:0; margin-right:10px">@wave.Value</td>
-                                }
-                            </tr>
+                        <tr>
+                            <td valign="top" style="width:40px; margin-top:0">
+                                @if (currentCounter == 1)
+                                {@item.UniqueId}
+                            </td>
+                            <td valign="top" style="width:100px; margin-top:0">
+                                @if (currentCounter == 1)
+                                {@item.Equivalence}
+                            </td>
+                            <td valign="top" style="width:250px; margin-top:0">
+                                @if (currentCounter == 1)
+                                {@item.Name}
+                            </td>
+                            <td valign="top" style="width:600px; margin-top:0">
+                                @if (currentCounter == 1)
+                                {@item.Description}
+                            </td>
+                            <td valign="top" align="left" style="width:250px; margin-top:0">
+                                @item.Topic
+                            </td>
+                            @foreach (var wave in @item.Waves)
+                            {
+                                <td valign="top" style="overflow:hidden;width:250px; word-break:break-all; margin-top:0; margin-right:10px">@wave.Value</td>
+                            }
+                        </tr>
                     }
                     @Html.Raw("</tbody>")
                 </table>

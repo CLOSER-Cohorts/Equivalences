@@ -1,6 +1,8 @@
 /packages
 /bin
+Equivalences/bin
 /obj
+/obj/debug
 Web.config
 Web.Debug.config
 Web.Release.config

@@ -12,10 +12,10 @@ using Algenta.Colectica.Model.Ddi;
 namespace ColecticaSdkMvc.Models
 {
    
-    public class OutputItem
+    public class Item
     {
-        public string QuestionName { get; set; }
-        public string VariableName { get; set; }
+        public string Id { get; set; }
+        public string QuestionValue { get; set; }
     }
 
 }

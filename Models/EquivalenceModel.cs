@@ -43,6 +43,8 @@ namespace ColecticaSdkMvc.Models
         public string Elapsed { get; set; }
         public List<Study> Datasets { get; set; }
 
+        public string OutputCsv { get; set; }
+
         public string GetString(List<string> selectedmethods)
         {
             string wordlist = "";
