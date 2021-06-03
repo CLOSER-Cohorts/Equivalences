@@ -37,55 +37,56 @@
         }
 </style>
 
-<script type="text/javascript">
+<script>
 
-    //create a user-defined function to download CSV file
-    function download_csv_file(data) {
-        var csvdata = "";
-        
-        csvdata = "Search Term, Name, Description, Variable Name, Variable Text, Variable Item, Question Name, Question Text, Question Item";
-        csvdata += "\n";
-        var result = JSON.stringify(data).trim();
-        result = result.replace('"[', '').replace(']"', '').trim();
-        while (result.length != 0) {
-            if (result.length != 0) { var currentItem = result.substr(result.indexOf("{"), result.indexOf("},")); }
-            result = result.substr(result.indexOf("},") + 2, result.length - result.indexOf("},"));
-            if (currentItem.length == 0) {
-                currentItem = result;
-                result = "";
-            }
-            if (currentItem.length != 0) {
-                var equivalence = currentItem.substr(currentItem.indexOf('equivalence') + 16, currentItem.length - currentItem.indexOf('equivalence') - 16);
-                equivalence = equivalence.substr(0, equivalence.indexOf(",") - 2);
-                var variablename = currentItem.substr(currentItem.indexOf('variableName') + 17, currentItem.length - currentItem.indexOf('variableName') - 17);
-                variablename = variablename.substr(0, variablename.indexOf(",") - 2);
-                var variabletext = currentItem.substr(currentItem.indexOf('variableText') + 17, currentItem.length - currentItem.indexOf('variableText') - 17);
-                variabletext = variabletext.substr(0, variabletext.indexOf(",") - 2);
-                var variableitem = currentItem.substr(currentItem.indexOf('variableItem') + 17, currentItem.length - currentItem.indexOf('variableItem') - 17);
-                variableitem = variableitem.substr(0, variableitem.indexOf(",") - 2);
-                var questionname = currentItem.substr(currentItem.indexOf('questionName') + 17, currentItem.length - currentItem.indexOf('questionName') - 17);
-                questionname = questionname.substr(0, questionname.indexOf(",") - 2);
-                var questiontext = currentItem.substr(currentItem.indexOf('questionText') + 17, currentItem.length - currentItem.indexOf('questionText') - 17);
-                questiontext = questiontext.substr(0, questiontext.indexOf(",") - 2);
-                var questionitem = currentItem.substr(currentItem.indexOf('questionItem') + 17, currentItem.length - currentItem.indexOf('questionItem') - 17);
-                questionitem = questionitem.substr(0, questionitem.indexOf(",") - 2);
-                var vname = currentItem.substr(currentItem.indexOf('name') + 9, currentItem.length - currentItem.indexOf('name') - 9);
-                vname = vname.substr(0, vname.indexOf(",") - 2);
-                var vdescription = currentItem.substr(currentItem.indexOf('description') + 16, currentItem.length - currentItem.indexOf('description') - 16);
-                vdescription = vdescription.substr(0, vdescription.indexOf(",") - 2);
-                csvdata = csvdata + equivalence + "," + vname + "," + vdescription + "," + variablename + "," + variabletext.replace(",", "").trim() + "," + variableitem + "," + questionname + "," + questiontext.replace(",", " ") + "," +
-                    questionitem;
-                csvdata += "\n";
-            }
-        }
-        var hiddenElement = document.createElement('a');
-        hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvdata);
-        hiddenElement.target = '_blank';
-        //provide the name for the CSV file to be downloaded
-        hiddenElement.download = 'Variable.csv';
-        hiddenElement.click();
+    function changeButtonClicked() {
+        var url = '@Url.Action("VariablesCsv", "Equivalence")';
+        $.post(url, $('form').serialize(), function (view) {
+            JSONtoCSVConvertor(view, "Variables.csv", true);
+        });
     }
 
+    function JSONtoCSVConvertor(JSONData, ReportTitle, ShowLabel) {
+        //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
+        var arrData = typeof JSONData != 'object' ? JSON.parse(JSONData) : JSONData;
+        var CSV = '';
+
+        //1st loop is to extract each row
+        for (var i = 0; i < arrData.length; i++) {
+            var row = "";
+            //2nd loop will extract each column and convert it in string comma-seprated
+            for (var index in arrData[i]) {
+                row += arrData[i][index];
+            }
+            row.slice(0, row.length - 1);
+            //add a line break after each row
+            CSV += row;
+        }
+        if (CSV == '') {
+            alert("Invalid data");
+            return;
+        }
+
+        //this trick will generate a temp "a" tag
+        var link = document.createElement("a");
+        link.id = "lnkDwnldLnk";
+
+        //this part will append the anchor tag and remove it after automatic click
+        document.body.appendChild(link);
+
+        var csv = CSV;
+        blob = new Blob([csv], { type: 'text/csv' });
+        var csvUrl = window.webkitURL.createObjectURL(blob);
+        var filename = 'Variables.csv';
+        $("#lnkDwnldLnk")
+            .attr({
+                'download': filename,
+                'href': csvUrl
+            });
+
+        $('#lnkDwnldLnk')[0].click();
+        document.body.removeChild(link);
+    }
 </script>
 
 <script type="text/javascript">

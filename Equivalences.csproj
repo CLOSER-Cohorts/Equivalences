@@ -244,7 +244,6 @@
     <Content Include="WebDist.Debug.config" />
     <Content Include="WebDist.Release.config" />
     <Content Include="Views\Equivalence\Concepts.cshtml" />
-    <Content Include="Views\Display.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
