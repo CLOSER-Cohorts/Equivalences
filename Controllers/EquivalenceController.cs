@@ -230,7 +230,6 @@ namespace ColecticaSdkMvc.Controllers
                     model.AllItems = m4.AllItems;
                     model.AllResults = m4.AllResults;
                     model.Datasets = m4.Datasets;
-                    ViewBag.AllResults = (new JavaScriptSerializer()).Serialize(m4.AllResults);
                     return View("Display", model);
                 default:
                     break;

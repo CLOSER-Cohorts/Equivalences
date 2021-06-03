@@ -56,7 +56,7 @@
         //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
         var arrData = typeof JSONData != 'object' ? JSON.parse(JSONData) : JSONData;
         var CSV = '';
-
+   
         //1st loop is to extract each row
         for (var i = 0; i < arrData.length; i++) {
             var row = "";
@@ -75,7 +75,6 @@
             return;
         }
 
-      
         //this trick will generate a temp "a" tag
         var link = document.createElement("a");
         link.id = "lnkDwnldLnk";
@@ -95,9 +94,10 @@
 
         $('#lnkDwnldLnk')[0].click();
         document.body.removeChild(link);
-
     }
 </script>
+
+
 
 <div style="margin-bottom:10px">
     <h3>Display - Equivalences @Model.Elapsed</h3>
@@ -188,8 +188,7 @@
                             <th align="left" style="width:300px">Variable Text</th>
                             <th align="left" style="width:100px">Agency</th>
                             <th align="left" style="width:16%">Study</th>
-                            <th align="left" style="width:10%">Concept</th>
-                            <th align="left" style="width:10%">Dataset</th>
+                            <th align="left" style="width:12%">Concept</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -234,7 +233,6 @@
                                 @Html.Raw("<th align=\"left\" style=\"width:100px\">Agency</th>")
                                 @Html.Raw("<th align=\"left\" style=\"width:16%\">Study</th>")
                                 @Html.Raw("<th align=\"left\" style=\"width:10%\">Concept</th>")
-                                @Html.Raw("<th align=\"left\" style=\"width:10%\">Dataset</th>")
                                 @Html.Raw("</tr></thead><tbody>")
 
                             }
@@ -272,27 +270,22 @@
                                 <td align="left" style="width:16%; margin-top:0">
                                     @Html.DisplayFor(modelItem => Model.AllResults[i].studyGroup, new { style = "width:98%" })
                                 </td>
-                                <td valign="top" align="left" style="width:10%; margin-top:0">
+
+                                <td valign="top" align="left" style="width:12%; margin-top:0">
                                     @Html.DisplayFor(modelItem => Model.AllResults[i].concept, new { style = "width:98%" })
-                                </td>
-                                <td valign="top" align="left" style="width:10%; margin-top:0">
-                                    @Html.DisplayFor(modelItem => Model.AllResults[i].dataset, new { style = "width:98%" })
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-        </div>
-        <div style="width:100%">
+        </div>        <div style="width:100%">
             @{var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();}
             @{ serializer.MaxJsonLength = Int32.MaxValue;}
             <button type="button" onclick="changeButtonClicked()" style="float:left; font-size:small; margin:10px">Save CSV</button>
             <input name="command" type="submit" value="Next" id="next" , style="float:right; font-size:small; margin:10px" />
             <input name="command" type="submit" value="Previous" id="previous" , style="float:right; font-size:small; margin:10px" />
+
         </div>
-
     }
-
 }
-

@@ -300,7 +300,7 @@
         <div style="width:100%">
             @{var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();}
             <button type="button" onclick="download_csv_file('@serializer.Serialize(Model.expecteditems)')" style="float:left; font-size:small; margin:10px">Save CSV</button>
-            <input name="command" type="submit" value="Next" id="next" , style="float:right; font-size:small; margin:10px" />
+            <input name="command" type="submit" value="Restart" id="next" , style="float:right; font-size:small; margin:10px" />
             <input name="command" type="submit" value="Previous" id="previous" , style="float:right; font-size:small; margin:10px" />
         </div>
     }
