@@ -44,59 +44,59 @@
                 </tr>
             </thead>
             <tbody>
-                @for (int i = 0; i < Model.AllResults.Count(); i++)
+                @for (int i = 0; i < Model.MultiConcepts.Count(); i++)
                 {
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].uniqueId, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].equivalence, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].name, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].description, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].variableName, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].variableText, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].variableItem, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].variableIdentifier, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].variableAgency, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].questionName, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].questionText, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].questionItem, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].questionIdentifier, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].studyGroup, new { style = "width:97%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].study, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].dataset, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].concept, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].questionconceptitem, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].concepts, new { style = "width:98%", @type = "hidden" })
-                    @*@Html.TextBoxFor(modelItem => Model.AllResults[i].conceptItems, new { style = "width:98%", @type = "hidden" })*@
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].column, new { style = "width:98%", @type = "hidden" })
-                    @Html.TextBoxFor(modelItem => Model.AllResults[i].selected, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].uniqueId, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].equivalence, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].name, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].description, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].variableName, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].variableText, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].variableItem, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].variableIdentifier, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].variableAgency, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].questionName, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].questionText, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].questionItem, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].questionIdentifier, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].studyGroup, new { style = "width:97%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].study, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].dataset, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].concept, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].questionconceptitem, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].concepts, new { style = "width:98%", @type = "hidden" })
+                    @*@Html.TextBoxFor(modelItem => Model.MultiConcepts[i].conceptItems, new { style = "width:98%", @type = "hidden" })*@
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].column, new { style = "width:98%", @type = "hidden" })
+                    @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].selected, new { style = "width:98%", @type = "hidden" })
 
-                    for (int j = 0; j < Model.AllResults[i].conceptItems.Count(); j++)
+                    for (int j = 0; j < Model.MultiConcepts[i].conceptItems.Count(); j++)
                     {
-                        @Html.TextBoxFor(modelItem => Model.AllResults[i].conceptItems[j].Text, new { style = "width:98%", @type = "hidden" })
+                        @Html.TextBoxFor(modelItem => Model.MultiConcepts[i].conceptItems[j].Text, new { style = "width:98%", @type = "hidden" })
                     }
-                    if (Model.AllResults[i].concepts != 1)
+                    if (Model.MultiConcepts[i].concepts != 1)
                     {
                         itemCount++;
                         currentCounter++;
                         currentCounter2++;
                         if (itemCount == 1)
                         {
-                            currentItem = Model.AllResults[i].uniqueId;
-                            currentwave = Model.AllResults[i].studyGroup;
-                            currentconcept = Model.AllResults[i].questionconceptitem;
+                            currentItem = Model.MultiConcepts[i].uniqueId;
+                            currentwave = Model.MultiConcepts[i].studyGroup;
+                            currentconcept = Model.MultiConcepts[i].questionconceptitem;
                         }
-                        if (Model.AllResults[i].studyGroup != currentwave)
+                        if (Model.MultiConcepts[i].studyGroup != currentwave)
                         {
-                            currentwave = Model.AllResults[i].studyGroup;
+                            currentwave = Model.MultiConcepts[i].studyGroup;
                             currentCounter2 = 1;
                         }
-                        if (Model.AllResults[i].questionItem != currentconcept)
+                        if (Model.MultiConcepts[i].questionItem != currentconcept)
                         {
-                            currentconcept = Model.AllResults[i].questionItem;
+                            currentconcept = Model.MultiConcepts[i].questionItem;
                             currentCounter2 = 1;
                         }
-                        if (Model.AllResults[i].uniqueId != currentItem)
+                        if (Model.MultiConcepts[i].uniqueId != currentItem)
                         {
-                            currentItem = Model.AllResults[i].uniqueId;
+                            currentItem = Model.MultiConcepts[i].uniqueId;
                             currentCounter = 1;
                             @Html.Raw("</tbody></table></div><div style=\"border: 1px solid black; margin-top:5px; width:250%\"><table border=\"0\" style=\"margin-left:10px\">");
                             @Html.Raw("<thead><tr>")
@@ -121,54 +121,54 @@
                             <td valign="top" style="width:40px">
                                 @if (currentCounter == 1)
                                 {
-                                    @Html.DisplayFor(modelItem => Model.AllResults[i].uniqueId, new { style = "width:98%" })
+                                    @Html.DisplayFor(modelItem => Model.MultiConcepts[i].uniqueId, new { style = "width:98%" })
                                 }
                             </td>
                             <td valign="top" align="left" style="width:120px; margin-top:0">
                                 @if (currentCounter == 1)
                                 {
-                                    @Html.DisplayFor(modelItem => Model.AllResults[i].equivalence, new { style = "width:98%" })
+                                    @Html.DisplayFor(modelItem => Model.MultiConcepts[i].equivalence, new { style = "width:98%" })
                                 }
                             </td>
                             <td valign="top" align="left" style="width:100px; margin-top:0">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].study, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].study, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:5%; margin-top:0">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].studyGroup, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].studyGroup, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:300px; margin-top:0">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].concept, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].concept, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:300px; margin-top:0">
                                 @if (currentCounter2 == 1)
                                 {
-                                    @Html.DropDownListFor(model => model.AllResults[i].selectedConcept, Model.AllResults[i].conceptItems, "", new { style = "width:98%", onchange = @"form.submit();" })
-                                    @*@Html.DropDownListFor(model => model.AllResults[i].selectedConcept, Model.AllResults[i].conceptItems, "", new { style = "width:98%", onchange = "myFunc(this.id, this.value)" })*@
+                                    @Html.DropDownListFor(model => model.MultiConcepts[i].selectedConcept, Model.MultiConcepts[i].conceptItems, "", new { style = "width:98%", onchange = @"form.submit();" })
+                                    @*@Html.DropDownListFor(model => model.MultiConcepts[i].selectedConcept, Model.MultiConcepts[i].conceptItems, "", new { style = "width:98%", onchange = "myFunc(this.id, this.value)" })*@
                                 }
                             </td>
                             <td valign="top" align="left" style="width:410px">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].questionItem, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].questionItem, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:410px">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].questionconceptitem, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].questionconceptitem, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:150px">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].questionName, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].questionName, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:600px">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].questionText, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].questionText, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:410px">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].variableItem, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].variableItem, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:410px">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].variableconceptitem, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].variableconceptitem, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:150px">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].variableName, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].variableName, new { style = "width:98%" })
                             </td>
                             <td valign="top" align="left" style="width:300px">
-                                @Html.DisplayFor(modelItem => Model.AllResults[i].variableText, new { style = "width:98%" })
+                                @Html.DisplayFor(modelItem => Model.MultiConcepts[i].variableText, new { style = "width:98%" })
                             </td>
                         </tr>
 
@@ -181,7 +181,7 @@
 <div style="width:100%">
     @{var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();}
     @{ serializer.MaxJsonLength = Int32.MaxValue;}
-    <button type="button" onclick="outputCSVClicked('@serializer.Serialize(Model.AllResults)')" ; style="float:left; font-size:small; margin:10px">Output CSV</button>
+    <button type="button" onclick="outputCSVClicked('@serializer.Serialize(Model.MultiConcepts)')" ; style="float:left; font-size:small; margin:10px">Output CSV</button>
     <input name="command" type="submit" value="Next" id="next" , style="float:right; font-size:small; margin:10px" />
     <input name="command" type="submit" value="Previous" id="previous" , style="float:right; font-size:small; margin:10px" />
 

@@ -167,7 +167,7 @@ namespace ColecticaSdkMvc.Controllers
                         
                         start = DateTime.Now;
                         newmodel = ProcessEquivalences(model, selectedItems, originalItems, selectedstudies, datasets, "Question", fileName);
-                        newmodel.AllResults = DetectMultipleEquivalences(newmodel.AllResults);
+                        newmodel.MultiConcepts = DetectMultipleEquivalences(newmodel.AllResults);
                         finish = DateTime.Now;
                         var elapsedhours = (finish - start).Hours;
                         var elapsedminutes = (finish - start).Minutes;
@@ -197,7 +197,7 @@ namespace ColecticaSdkMvc.Controllers
                     {
                         start = DateTime.Now;
                         newmodel = ProcessEquivalences(model, selectedItems, originalItems, selectedstudies, datasets, "Variable", fileName);
-                        newmodel.AllResults = DetectMultipleEquivalences(newmodel.AllResults);
+                        newmodel.MultiConcepts = DetectMultipleEquivalences(newmodel.AllResults);
                         ViewBag.selectedItems = selectedItems;
                         finish = DateTime.Now;
                         var elapsedhours = (finish - start).Hours;
@@ -219,11 +219,12 @@ namespace ColecticaSdkMvc.Controllers
                     newmodel =  FileReader(postedFile1);
                     model.AllItems = newmodel.AllItems;
                     model.AllResults = newmodel.AllResults.OrderBy(a => a.concept).OrderBy(a => a.studyGroup).OrderBy(a => a.uniqueId).ToList();
+                    model.MultiConcepts = newmodel.MultiConcepts;
                     model.Datasets = newmodel.Datasets;
                     var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
                     serializer.MaxJsonLength = Int32.MaxValue;
                     model.selectedItems = JsonConvert.SerializeObject(newmodel.AllResults);
-                    return model.AllResults.Where(a => a.concepts > 1).Count() == 0 ? View("Display", model) : View("Concepts", model);               
+                    return model.MultiConcepts.Where(a => a.concepts > 1).Count() == 0 ? View("Display", model) : View("Concepts", model);               
                 default:
                     if (model.SelectedMethods == null) { model.SelectedMethods = new List<string>(); }
                     ViewBag.Json = (new JavaScriptSerializer()).Serialize(nodes);
@@ -478,7 +479,7 @@ namespace ColecticaSdkMvc.Controllers
 
                     }
                     model.AllResults = items;
-                    model.AllResults = DetectMultipleEquivalences(model.AllResults);
+                    model.MultiConcepts = DetectMultipleEquivalences(model.AllResults);
                     ModelState.Clear();
                     return View("Display", model);
                case "Next":
@@ -1326,10 +1327,14 @@ namespace ColecticaSdkMvc.Controllers
                 }
                 i++;
             }
-           
-            equivalences = equivalences.SetValue(a => a.selected = true).ToList();
 
-            newequivalences = DetectMultipleEquivalences(equivalences);
+            equivalences = equivalences.SetValue(a => a.selected = true).ToList();
+            newequivalences = equivalences;
+            List<EquivalenceItem> multipleequivalences = DetectMultipleEquivalences(equivalences);
+
+            model.AllItems = newequivalences;
+            model.AllResults = newequivalences;
+            model.MultiConcepts = multipleequivalences;
 
             model.AllItems = newequivalences;
             model.AllResults = newequivalences;
@@ -1377,35 +1382,38 @@ namespace ColecticaSdkMvc.Controllers
                 }
 
                 EquivalenceItem newequivalence = new EquivalenceItem();
-                newequivalence.equivalence = equivalence.equivalence;
-                newequivalence.questionName = equivalence.questionName;
-                newequivalence.questionText = equivalence.questionText.Replace(":", "").Replace(":", "").Replace("}", ")").Replace("{", "(").Replace("#", "");
-                newequivalence.questionItem = equivalence.questionItem;
-                newequivalence.variableName = equivalence.variableName;
-                newequivalence.variableText = equivalence.variableText.Replace(":", "").Replace(":", "").Replace("}", ")").Replace("{", "(").Replace("#", "");
-                newequivalence.variableItem = equivalence.variableItem;
-                newequivalence.study = equivalence.study;
-                newequivalence.studyGroup = equivalence.studyGroup;
-                newequivalence.concept = equivalence.concept;
-                newequivalence.questionconceptitem = equivalence.questionconceptitem;
-                newequivalence.dataset = equivalence.dataset;
-                newequivalence.name = equivalence.name;
-                newequivalence.description = equivalence.description;
-                newequivalence.uniqueId = equivalence.uniqueId;
-                newequivalence.concepts = conceptitems.Count;
-                newequivalence.selected = equivalence.selected;
-                newequivalence.selectedConcept = equivalence.selectedConcept;
-                newequivalence.conceptItems = conceptitems;
+               
                 if (conceptitems.Count > 1)
-                {                    
-                   
+                {
+                    newequivalence.equivalence = equivalence.equivalence;
+                    newequivalence.questionName = equivalence.questionName;
+                    newequivalence.questionText = equivalence.questionText.Replace(":", "").Replace(":", "").Replace("}", ")").Replace("{", "(").Replace("#", "");
+                    newequivalence.questionItem = equivalence.questionItem;
+                    newequivalence.variableName = equivalence.variableName;
+                    newequivalence.variableText = equivalence.variableText.Replace(":", "").Replace(":", "").Replace("}", ")").Replace("{", "(").Replace("#", "");
+                    newequivalence.variableItem = equivalence.variableItem;
+                    newequivalence.study = equivalence.study;
+                    newequivalence.studyGroup = equivalence.studyGroup;
+                    newequivalence.concept = equivalence.concept;
+                    newequivalence.questionconceptitem = equivalence.questionconceptitem;
+                    newequivalence.dataset = equivalence.dataset;
+                    newequivalence.name = equivalence.name;
+                    newequivalence.description = equivalence.description;
+                    newequivalence.uniqueId = equivalence.uniqueId;
+                    newequivalence.concepts = conceptitems.Count;
+                    newequivalence.selected = equivalence.selected;
+                    newequivalence.selectedConcept = equivalence.selectedConcept;
+                    newequivalence.conceptItems = conceptitems;
+
                     var selecteditems = equivalence.variableItem.Split(':').ToList();
                     Guid myGuid = new Guid(selecteditems[1]);
                     var variableconcept = Helper.GetReferences(selecteditems[0], myGuid).Where(a => a.ItemType == new Guid("91da6c62-c2c2-4173-8958-22c518d1d40d")).ToList();
-                    if (variableconcept.Count != 0) { newequivalence.variableconceptitem = variableconcept.FirstOrDefault().CompositeId.ToString(); }                   
+                    if (variableconcept.Count != 0) { newequivalence.variableconceptitem = variableconcept.FirstOrDefault().CompositeId.ToString(); }
+
+                    counter = equivalence.uniqueId;
+                    newequivalences.Add(newequivalence);
                 }
-                counter = equivalence.uniqueId;
-                newequivalences.Add(newequivalence);
+                
 
             }
             return newequivalences;
