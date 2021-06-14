@@ -17,9 +17,11 @@ namespace ColecticaSdkMvc.Models
         public List<EquivalenceItem> MasterItems { get; set; }
         public List<EquivalenceItem> AllItems { get; set; }
         public List<EquivalenceItem> AllResults { get; set; }
+        public List<EquivalenceItem> MultiConcepts { get; set; }
         public List<EquivalenceItem> Items { get; set; }
         public List<RepositoryItemMetadata> AllConcepts { get; set; }
-        
+        public IEnumerable<SelectListItem> concepts { get; set; }
+        public string selectedconcept { get; set; }
         public List<StudyItem> Results { get; set; }
         public List<string> SelectedStudies { get; set; }
         public string selectStudies { get; set; }
@@ -42,6 +44,8 @@ namespace ColecticaSdkMvc.Models
         public string EquivalenceError { get; set; }
         public string Elapsed { get; set; }
         public List<Study> Datasets { get; set; }
+
+        public string selectedItems { get; set; }
 
         public string GetString(List<string> selectedmethods)
         {

@@ -49,23 +49,28 @@ namespace ColecticaSdkMvc.Utility
         public static List<RepositoryItemMetadata> GetReferences(string agency, Guid id)
         {
             MultilingualString.CurrentCulture = "en-GB";
-
+            List<RepositoryItemMetadata> referenceItems = new List<RepositoryItemMetadata>();
             var client = ClientHelper.GetClient();
-
             // Retrieve the requested item from the Repository.
             // Populate the item's children, so we can display information about them.
-            IVersionable item = client.GetLatestItem(id, agency,
-                 ChildReferenceProcessing.Populate);
+            try
+            {
+                IVersionable item = client.GetLatestItem(id, agency,
+                     ChildReferenceProcessing.Populate);
+                // Use a graph search to find a list of all items that 
+                // directly reference this item.
+                GraphSearchFacet facet = new GraphSearchFacet();
+                facet.TargetItem = item.CompositeId;
+                facet.UseDistinctResultItem = false;
 
-            // Use a graph search to find a list of all items that 
-            // directly reference this item.
-            GraphSearchFacet facet = new GraphSearchFacet();
-            facet.TargetItem = item.CompositeId;
-            facet.UseDistinctResultItem = false;
-
-            var referencingItemsDescriptions = client.GetRepositoryItemDescriptionsByObject(facet);
-            List<RepositoryItemMetadata> referenceItems = referencingItemsDescriptions.ToList();
-            var referencingItemsSubject = client.GetRepositoryItemDescriptionsBySubject(facet).ToList();
+                var referencingItemsDescriptions = client.GetRepositoryItemDescriptionsByObject(facet);
+                referenceItems = referencingItemsDescriptions.ToList();
+                var referencingItemsSubject = client.GetRepositoryItemDescriptionsBySubject(facet).ToList();
+            }
+            catch (Exception e)
+            {
+                return referenceItems;
+            }
             return referenceItems;
         }
 

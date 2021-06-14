@@ -34,10 +34,10 @@ namespace ColecticaSdkMvc.Models
         public string study { get; set; }
         public string dataset { get; set; }
         public string concept { get; set; }
-        public string selectedconcept { get; set; }
+        public string selectedConcept { get; set; }
         public string questionconceptitem { get; set; }
         public string variableconceptitem { get; set; }
-        public IEnumerable<SelectListItem> conceptitems { get; set; }
+        public List<SelectListItem> conceptItems { get; set; }
         public int concepts { get; set; }
         public string questiongroupname { get; set; }
         public string questiongroupitem { get; set; }
@@ -48,6 +48,13 @@ namespace ColecticaSdkMvc.Models
 
         public int counter { get; set; }
         public bool removed { get; set; }
+        public bool selectconcept { get; set; }
     }
+
+    public class SelectedConcept
+    {
+        public string selectedConcept { get; set; }
+    }
+
 
 }

@@ -168,6 +168,7 @@
     </Compile>
     <Compile Include="Models\CategorySchemeModel.cs" />
     <Compile Include="Models\CodeSchemeModel.cs" />
+    <Compile Include="Models\DashBoardViewModel.cs" />
     <Compile Include="Models\EquivalenceItem.cs" />
     <Compile Include="Models\EquivalenceModel.cs" />
     <Compile Include="Models\ExpectedItem.cs" />
@@ -204,12 +205,19 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <Content Include="Scripts\jquery-1.10.2.min.map" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
+    <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="Scripts\jquery-1.10.2.js" />
+    <Content Include="Scripts\jquery-1.10.2.min.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
+    <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
@@ -243,6 +251,8 @@
     <Content Include="WebDist.config" />
     <Content Include="WebDist.Debug.config" />
     <Content Include="WebDist.Release.config" />
+    <Content Include="Views\Shared\_AllResults.cshtml" />
+    <Content Include="Views\Equivalence\_AllResults.cshtml" />
     <Content Include="Views\Equivalence\Concepts.cshtml" />
   </ItemGroup>
   <ItemGroup>
