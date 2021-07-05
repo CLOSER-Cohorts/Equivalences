@@ -80,12 +80,13 @@ namespace ColecticaSdkMvc.Controllers
         {
             // This is the Controller action for the main screen on Equivalences where the user selects the options to be used in selecting Equivalences for analysis
 
-            // There are five options controlled through a case statement. The options in the case statement correspond to buttons on the Index view
+            // There are six options controlled through a case statement. The options in the case statement correspond to buttons on the Index view
             // Upload Equivalences will upload a list of equivalences from a csv file for analysis for studies
             // Save will add an equivalence to the list of equivalences for analysis for studies
             // Equivalent Question will load up the questions and variables and find equivalant questions for matching question name, matching question text or equivalences.
             // Equivalent Variable will load up the questions and variables and find equivalant variable for matching question name, matching question text or equivalences.
             // Upload will load a csv of equivalences generated from the Display view using the Output Equivalences button
+            // Upload Studies will load a csv of variables generated from the Display view using the Output All button
 
             EquivalenceModel mymodel = TempData["EquivalenceModel"] as EquivalenceModel;
             if (mymodel != null) { model = RefreshModel(model, mymodel); }
@@ -224,7 +225,21 @@ namespace ColecticaSdkMvc.Controllers
                     ViewBag.selectedItems = (new JavaScriptSerializer()).Serialize(selectednodes); 
                     ViewBag.originalItems = (new JavaScriptSerializer()).Serialize(selectednodes);
                     TempData["EquivalenceModel"] = model;
-                    return model.MultiConcepts.Where(a => a.concepts > 1).Count() == 0 ? View("Display", model) : View("Concepts", model);              
+                    return model.MultiConcepts.Where(a => a.concepts > 1).Count() == 0 ? View("Display", model) : View("Concepts", model);
+                case "Upload Studies":
+                    newmodel = FileReader(postedFile2);
+                    model.AllItems = newmodel.AllItems;
+                    model.AllResults = newmodel.AllResults.OrderBy(a => a.concept).OrderBy(a => a.studyGroup).OrderBy(a => a.uniqueId).ToList();
+                    model.AllSelected = newmodel.AllResults.OrderBy(a => a.concept).OrderBy(a => a.studyGroup).OrderBy(a => a.uniqueId).ToList();
+                    model.MultiConcepts = newmodel.MultiConcepts;
+                    model.Datasets = newmodel.Datasets;
+                    model.WordList = new List<Word>();
+                    model.SelectedMethods = new List<string>();
+                    List<Node> selectednodes1 = SelectedStudies(model.AllResults, nodes);
+                    ViewBag.selectedItems = (new JavaScriptSerializer()).Serialize(selectednodes1);
+                    ViewBag.originalItems = (new JavaScriptSerializer()).Serialize(selectednodes1);
+                    TempData["EquivalenceModel"] = model;
+                    return View(model);
                 default:
                     if (model.SelectedMethods == null) { model.SelectedMethods = new List<string>(); }
                     ViewBag.Json = (new JavaScriptSerializer()).Serialize(nodes);
@@ -1675,6 +1690,42 @@ namespace ColecticaSdkMvc.Controllers
 
         }
 
+        [HttpPost]
+        public ContentResult AllCSV()
+        {
+            // to upload
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            serializer.MaxJsonLength = Int32.MaxValue;
+            var resolveRequest = HttpContext.Request;
+            List<EquivalenceItem> allresults = new List<EquivalenceItem>();
+            resolveRequest.InputStream.Seek(0, SeekOrigin.Begin);
+            string jsonString = new StreamReader(resolveRequest.InputStream).ReadToEnd();
+            if (jsonString != null)
+            {
+                var jsonStringlength = jsonString.Length;
+                if (jsonString.Substring(jsonStringlength - 1, 1) != "]") { jsonString = jsonString.Substring(0, jsonStringlength - 1); }
+                allresults = serializer.Deserialize<List<EquivalenceItem>>(jsonString).ToList();
+
+            }
+
+            StringBuilder output = new StringBuilder();
+            string OutputCSV = null;
+            OutputCSV = "ID, Search Term,Question Name,Question Text,Question Item,QuestionConceptItem,Variable Name,Variable Text,Variable Item,Agency,Study,Concept,Dataset\n";
+            foreach (var allresult in allresults)
+            {
+                if (allresult.dataset == null) { allresult.dataset = "No Dataset"; }
+                if (allresult.uniqueId == 0) { allresult.equivalence = "No Equivalence"; }
+                if (allresult.concept == null) { allresult.concept = "No Concept"; }
+                output = output.Append(allresult.uniqueId + "," + allresult.equivalence + "," + allresult.questionName + "," + allresult.questionText.Replace(",", ".").Replace("\n", "") + "," + allresult.questionItem + "," +
+                    allresult.questionconceptitem + ", " + allresult.variableName + ", " + allresult.variableText + ", " + allresult.variableItem + ", " + allresult.study + "," +
+                    allresult.studyGroup + "," + allresult.concept.Replace(",", ".") + "," + allresult.dataset);
+                output = output.Append("\n");
+            }
+            OutputCSV = OutputCSV + output.ToString();
+            var outputcsv = serializer.Serialize(OutputCSV);
+            return Content(outputcsv);
+
+        }
         [HttpPost]
         public ActionResult DisplayItems(string items)
         {
