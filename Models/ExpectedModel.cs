@@ -15,6 +15,7 @@ namespace ColecticaSdkMvc.Models
     {
         public List<EquivalenceItem> AllItems { get; set; }
         public IList<EquivalenceItem> AllResults { get; set; }
+        public IList<EquivalenceItem> AllSelected { get; set; }
         public List<ExpectedItem> expecteditems { get; set; }
         public List<string> SelectedStudies { get; set; }
         public List<Study> Datasets { get; set; }

@@ -14,9 +14,9 @@ namespace ColecticaSdkMvc.Models
   
 	public class EquivalenceModel
 	{
-        public List<EquivalenceItem> MasterItems { get; set; }
         public List<EquivalenceItem> AllItems { get; set; }
         public List<EquivalenceItem> AllResults { get; set; }
+        public List<EquivalenceItem> AllSelected { get; set; }
         public List<EquivalenceItem> MultiConcepts { get; set; }
         public List<EquivalenceItem> Items { get; set; }
         public List<RepositoryItemMetadata> AllConcepts { get; set; }

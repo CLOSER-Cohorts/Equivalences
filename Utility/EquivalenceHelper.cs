@@ -14,6 +14,67 @@ namespace ColecticaSdkMvc.Utility
 {
 	public class EquivalenceHelper
 	{
+        public static List<TreeViewNode> BuildStudiesNodes(List<TreeViewNode> nodes)
+        {
+            // move
+            MultilingualString.CurrentCulture = "en-GB";
+
+            SearchFacet facet = new SearchFacet();
+            facet.ItemTypes.Add(DdiItemType.Group);
+            facet.ResultOrdering = SearchResultOrdering.ItemType;
+            facet.SearchLatestVersion = true;
+            var client1 = ClientHelper.GetClient();
+            SearchResponse response = client1.Search(facet);
+            facet.ItemTypes.Add(DdiItemType.StudyUnit);
+            // facet.ItemTypes.Add(DdiItemType.VariableGroup);
+            facet.ResultOrdering = SearchResultOrdering.ItemType;
+            facet.SearchLatestVersion = true;
+            var client2 = ClientHelper.GetClient();
+            SearchResponse allsweeps = client2.Search(facet);
+            // model.Studies = LoadStudies(response);
+            List<StudyItem> studies = new List<StudyItem>();
+            int i = 1;
+            foreach (var result in response.Results)
+            {
+                State cstate = new State();
+                cstate.selected = false;
+
+                nodes.Add(new TreeViewNode { id = result.AgencyId, parent = "#", text = result.DisplayLabel, state = cstate });
+                studies = BuildSweepsNodes(studies, allsweeps, result.DisplayLabel, result.AgencyId, nodes, result.AgencyId);
+                i++;
+            }
+
+            // model.Results = studies;
+            return nodes;
+        }
+
+        public static List<StudyItem> BuildSweepsNodes(List<StudyItem> model, SearchResponse allsweeps, string study, string agency, List<TreeViewNode> nodes, string parent)
+        {
+            // move
+            int i = 1;
+            bool found = false;
+            foreach (var sweep in allsweeps.Results)
+            {
+                StudyItem item = new StudyItem();
+                item.AgencyId = sweep.AgencyId;
+                item.DisplayLabel = sweep.DisplayLabel;
+                item.Identifier = sweep.Identifier;
+                item.ReferenceItem = study;
+                if (sweep.AgencyId == agency)
+                {
+                    State cstate = new State();
+                    List<string> search = new List<string>() { item.AgencyId + "," + item.Identifier.ToString() + "," + item.DisplayLabel };
+                    //if (selecteditems != null) { found = search.Any(s => selecteditems.Contains(s)); } else { found = false; }
+                    cstate.selected = found;
+                    nodes.Add(new TreeViewNode { id = parent + " " + item.Identifier.ToString(), parent = parent.ToString(), text = item.DisplayLabel, state = cstate });
+                }
+                i++;
+            }
+            model = model.OrderBy(r => r.ReferenceItem).ToList();
+            return model;
+        }
+
+
         public static EquivalenceModel BuildStudiesTree(EquivalenceModel model, List<TreeViewNode> nodes)
         {
             // move
@@ -31,7 +92,7 @@ namespace ColecticaSdkMvc.Utility
             facet.SearchLatestVersion = true;
             var client2 = ClientHelper.GetClient();
             SearchResponse allsweeps = client2.Search(facet);
-            model.Studies = LoadStudies(model, response);
+            model.Studies = LoadStudies(response);
             List<StudyItem> studies = new List<StudyItem>();
             int i = 1;
             foreach (var result in response.Results)
@@ -74,7 +135,7 @@ namespace ColecticaSdkMvc.Utility
             return model;
         }
 
-        public static List<SelectListItem> LoadStudies(EquivalenceModel model, SearchResponse response)
+        public static List<SelectListItem> LoadStudies(SearchResponse response)
         {
             // move
             List<SelectListItem> studies = new List<SelectListItem>();
@@ -101,7 +162,7 @@ namespace ColecticaSdkMvc.Utility
             facet.SearchLatestVersion = true;
             var client2 = ClientHelper.GetClient();
             SearchResponse allsweeps = client2.Search(facet);
-            model.Studies = LoadStudies(model, response);
+            model.Studies = LoadStudies(response);
             List<StudyItem> studies = new List<StudyItem>();
             string study = null;
             if (agency != null)

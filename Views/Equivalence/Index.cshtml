@@ -22,7 +22,7 @@
         <div class="container" style="border:solid; border-width:thin; padding:5px">
             <div class="navbar-collapse collapse">
                 <button style="width:49.5%" onclick="location.href='@Url.Action("List", "Home")';return false;"><h5>Display Items</h5></button>
-                <button style="width:49.5%" onclick="location.href='@Url.Action("Index", "Equivalence")';return false;"><h5>Select Question Equivalences from Sweeps</h5></button>
+                <button style="width:49.5%" onclick="location.href='@Url.Action("Index", "Equivalence")';return false;"><h5>Select Question or Variable Equivalences from Sweeps</h5></button>
             </div>
         </div>
     </div>
@@ -97,8 +97,7 @@
                 <h4>Index</h4>               
                 <div style="width:100%">
                     <h5>
-                        There are a number of methods for matching equivalences in Studies. The methods below
-                        will only provide a match where there is 100% correlation.
+                        There are a number of methods for matching equivalences in Studies. The methods below will only provide a match where there is 100% correlation.
                     </h5>
 
                     <div class="float-left" style="font-size:12px">
@@ -119,17 +118,17 @@
                         <label style="margin-left:5px">Match Name</label>
                         @Html.RadioButtonFor(model => model.Name, "false", new { style = "margin-left:10px" })
                         <label>Match Text</label>
-                    </div>                   
-                    <div style="width:100%; margin-bottom:5px; float:left">
-                        <h5>
-                            Please select the equivalences to be analysed and then sweep(s) to be used with these equivalences
-                        </h5>
-                        <h5>
-                            Select a file of Equivalences to Upload ....
-                        </h5>
                     </div>
-                    <input name="command" type="submit" value="Upload Equivalences" id="upload" , style="width:150px; float:right; font-size:small; margin-left:5px" />
-                    <input type="file" value="Select Equivalences" id="postedFile" name="postedFile" accept=".csv" style="float:left" />
+                    <div style="width:100%; margin-bottom:5px; float:left">
+                        <h5>Please select the equivalences to be analysed and then sweep(s) to be used with these equivalences or upload studies previously saved to file</h5>
+                    </div>                 
+                    <div style="width:100%; margin-bottom:5px; float:left">
+                        <h5>Select a file of Equivalences to Upload .... </h5>
+                    </div>
+                    <div style="width:100%; margin-bottom:5px; float:left">
+                        <input name="command" type="submit" value="Upload Equivalences" id="upload" , style="width:150px; float:right; font-size:small; margin-left:5px" />
+                        <input type="file" value="Select Equivalences" id="postedFile" name="postedFile" accept=".csv" style="float:left" />
+                    </div>
                     <div style="width:100%; margin-bottom:5px; float:left">
                         <h5>
                             or Add word(s) to search. You can add or delete word(s) to search by using the appropriate buttons.

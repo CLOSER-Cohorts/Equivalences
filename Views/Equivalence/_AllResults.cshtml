@@ -5,7 +5,8 @@
     /**/
 
     ViewBag.Title = "Display";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    TempData.Keep("EquivalenceModel");
+
     int itemCount = 0;
     int currentItem = 0;
     int currentCounter = 0;
@@ -143,7 +144,6 @@
                                 @if (currentCounter2 == 1)
                                 {
                                     @Html.DropDownListFor(model => model.MultiConcepts[i].selectedConcept, Model.MultiConcepts[i].conceptItems, "", new { style = "width:98%", onchange = @"form.submit();" })
-                                    @*@Html.DropDownListFor(model => model.MultiConcepts[i].selectedConcept, Model.MultiConcepts[i].conceptItems, "", new { style = "width:98%", onchange = "myFunc(this.id, this.value)" })*@
                                 }
                             </td>
                             <td valign="top" align="left" style="width:410px">
@@ -181,7 +181,7 @@
 <div style="width:100%">
     @{var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();}
     @{ serializer.MaxJsonLength = Int32.MaxValue;}
-    <button type="button" onclick="outputCSVClicked('@serializer.Serialize(Model.MultiConcepts)')" ; style="float:left; font-size:small; margin:10px">Output CSV</button>
+    <button type="button" onclick="conceptCSVClicked('@serializer.Serialize(Model.MultiConcepts)')" ; style="float:left; font-size:small; margin:10px">Output CSV</button>
     <input name="command" type="submit" value="Next" id="next" , style="float:right; font-size:small; margin:10px" />
     <input name="command" type="submit" value="Previous" id="previous" , style="float:right; font-size:small; margin:10px" />
 

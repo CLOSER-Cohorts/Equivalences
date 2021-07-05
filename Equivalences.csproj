@@ -183,6 +183,7 @@
     <Compile Include="Models\State.cs" />
     <Compile Include="Models\StudyItem.cs" />
     <Compile Include="Models\StudyUnitModel.cs" />
+    <Compile Include="Models\Node.cs" />
     <Compile Include="Models\TreeViewNode.cs" />
     <Compile Include="Models\VariableItem.cs" />
     <Compile Include="Models\Word.cs" />
@@ -251,7 +252,6 @@
     <Content Include="WebDist.config" />
     <Content Include="WebDist.Debug.config" />
     <Content Include="WebDist.Release.config" />
-    <Content Include="Views\Shared\_AllResults.cshtml" />
     <Content Include="Views\Equivalence\_AllResults.cshtml" />
     <Content Include="Views\Equivalence\Concepts.cshtml" />
   </ItemGroup>
